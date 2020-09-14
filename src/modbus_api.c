@@ -84,6 +84,34 @@ int set_rs485_attr(json_object * input, json_object * output)
 }
 
 
+char  remove_blank(char *str)
+{
+    int i=0, is = -1, in = 0;
+    for (i=0;str[i] != '\0';++i){
+        if (str[i] != ' '){
+            if (is != -1){
+                    str[is] = str[i];
+                    str[i] = ' ';
+                if (in == 1){
+                    is = i;
+                } else {
+                    ++is;
+                }
+            }
+        }
+	else if (is == -1){
+            is = i;
+            ++in;
+        } else {
+            ++in;
+        }
+    }
+    if (is != -1){
+        str[is] = '\0';
+    }
+    return 0;
+}
+
 unsigned char my_hex_str_to_i(char *s)
 {
 	unsigned char i,tmp=0,n;
@@ -816,6 +844,88 @@ int read_dlt645_data(json_object * input, json_object * output)
 
 }
 
+/***
+ * @api {post} /rs485/terminal/send_read /rs485/terminal/send_read
+ * @apiGroup rs485
+ * @apiVersion 1.0.0
+ * @apiDescription  termiinal send read .
+ * @apiHeader {string} Authorization Users unique token.
+ * @apiSuccess {integer} code return code.
+ * @apiSuccess (Code) {integer} 0 success.
+ * @apiSuccess (Code) {integer} -1 Invalid user, permission denied or not logged in!
+ */
+int terminal_send_read(json_object * input, json_object * output)
+{
+	char *str_hex = gjson_get_string(input, "show_type");
+	char s_send = gjson_get_boolean(input, "show_send");
+	char s_time = gjson_get_boolean(input, "show_date");
+	char *s_data = gjson_get_string(input, "data");
+
+
+        int fd = 0;
+        int ret = 8;
+        int count = 0;
+        int i = 0;
+        int nbytes = 0;
+
+	json_object *rs485_data = json_object_new_object();
+
+	if(s_send){
+                gjson_add_string(rs485_data,"send",s_data);
+	}
+
+	cfg_init();
+        fd = uartOpen(cfg.ttyport,cfg.ttyspeed,0,cfg.ttytimeout);
+
+
+        if(!strcmp(str_hex,"hex")){
+		remove_blank(s_data);
+		nbytes = strlen(s_data);
+                if(nbytes%2){
+                        printf("date len err\n");
+                        return -1;
+                }
+                for(i=0;i<nbytes/2;i++){
+                        s_data[i] = my_hex_str_to_i_l(s_data,2,2*i);;
+                }
+                tty_write(fd,s_data,nbytes/2);
+        }
+        else{
+		nbytes = strlen(s_data);
+                tty_write(fd,s_data,nbytes);
+        }
+        unsigned  char rec_buff[1024] = {0};
+        while(ret==8){
+                ret = MyuartRxExpires(fd,200,&rec_buff[0+count],cfg.ttytimeout);
+                count +=ret;
+        }
+
+        usleep(1000);
+        MyuartClose(fd);
+
+        char alldata[10] = {0};
+        char alldata1[1024] = {0};
+        if(!strcmp(str_hex,"hex")){
+		for(i=0;i<count;i++){
+			sprintf(alldata,"%02x",rec_buff[i]);
+			strcat(alldata1,alldata);
+		}
+		gjson_add_string(rs485_data,"alldata",alldata1);
+        }
+        else{
+                printf("rec:%s\n",rec_buff);
+                gjson_add_string(rs485_data,"alldata",rec_buff);
+        }
+	if(s_time){
+		char *date_rc =  getShellCommandReturnDynamic("date '+%Y-%m-%d %H:%M:%S'");
+                gjson_add_string(rs485_data,"date",date_rc);
+	}
+        gjson_add_object(output, "rs485_data",rs485_data);
+
+	return 0;
+
+}
+
 /** The implementation of the GetAPIFunctions function **/
 #include <gl/glapibase.h>
 
@@ -830,6 +940,7 @@ static api_info_t gl_lstCgiApiFuctionInfo[] = {
 	map("/rs485/ele_meter_vol/get", "post", get_rs485_ele_meter_vol),
 	map("/rs485/dlt645/contact_get", "get", get_dlt645_contact_addr),
 	map("/rs485/dlt645/data_read", "post", read_dlt645_data),
+	map("/rs485/terminal/send_read", "post", terminal_send_read),
 };
 
 api_info_t *get_api_entity(int *pLen)
