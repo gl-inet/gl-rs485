@@ -20,7 +20,6 @@ ssize_t conn_write(int d, void *buf, size_t nbytes, int istty);
 
 #define FD_MSET(d, s) do { FD_SET(d, s); max_sd = MAX(d, max_sd); } while (0);
 
-#define LOG
 int tty_open(ttydata_t *mod)
 {
 	cfg_init();
@@ -280,8 +279,10 @@ tty_write_read(char * buf, size_t nbytes,char type)
 
 	char alldata[10] = {0};
 	char alldata1[1024] = {0};
+	memset(alldata1,0,1024);
 	if(type=='H'){
 		for(i=0;i<count;i++){
+			memset(alldata,0,10);
 			sprintf(alldata,"%02x",rec_buff[i]);
 			strcat(alldata1,alldata);
 		}

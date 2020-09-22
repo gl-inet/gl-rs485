@@ -55,6 +55,19 @@ cfg_init(void)
 	char timeout_s[16] = {0};
 	char port[16] = {0};
 	char addr[16] = {0};
+	char port_m[16] = {0};
+	char addr_m[48] = {0};
+	char timeout_m[16] = {0};
+	char qos_m[16] = {0};
+	char autoconn_m[16] = {0};
+	char autoconnmaxtime_m[16] = {0};
+	char autoconninteval_m[16] = {0};
+	char interval_m[16] = {0};
+	char username_m[32] = {0};
+	char password_m[32] = {0};
+	char clientid_m[32] = {0};
+	char publish_m[32] = {0};
+	char subscribe_m[32] = {0};
 
 	guci2_get(ctx, "rs485.rs485.device", device);
 	guci2_get(ctx, "rs485.rs485.speed", speed);
@@ -66,17 +79,46 @@ cfg_init(void)
 	guci2_get(ctx, "rs485.socket.port", port);
 	guci2_get(ctx, "rs485.socket.address", addr);
 
+	guci2_get(ctx, "rs485.mqtt.port", port_m);
+	guci2_get(ctx, "rs485.mqtt.address", addr_m);
+	guci2_get(ctx, "rs485.mqtt.timeout", timeout_m);
+	guci2_get(ctx, "rs485.mqtt.interval", interval_m);
+	guci2_get(ctx, "rs485.mqtt.username", username_m);
+	guci2_get(ctx, "rs485.mqtt.password", password_m);
+	guci2_get(ctx, "rs485.mqtt.qos", qos_m);
+	guci2_get(ctx, "rs485.mqtt.clientid", clientid_m);
+	guci2_get(ctx, "rs485.mqtt.publish", publish_m);
+	guci2_get(ctx, "rs485.mqtt.subscribe", subscribe_m);
+	guci2_get(ctx, "rs485.mqtt.autoconn", autoconn_m);
+	guci2_get(ctx, "rs485.mqtt.autoconninteval",autoconninteval_m);
+	guci2_get(ctx, "rs485.mqtt.autoconnmaxtime", autoconnmaxtime_m);
+
   	strncpy(cfg.ttyport, device, sizeof(device));
+
   	strncpy(cfg.ttymode, mode, sizeof(mode));
 
   	strncpy(cfg.serveraddr, addr, sizeof(addr));
   	strncpy(cfg.connmode, mode_s, sizeof(mode_s));
+	
+	sprintf(cfg.mqttaddr,"tcp://%s:%s",addr_m,port_m);
+  	strncpy(cfg.mqttusername, username_m, sizeof(username_m));
+  	strncpy(cfg.mqttpassword, password_m, sizeof(password_m));
+  	strncpy(cfg.mqttclientid, clientid_m, sizeof(clientid_m));
+  	strncpy(cfg.mqttpublish, publish_m, sizeof(publish_m));
+  	strncpy(cfg.mqttsubscribe, subscribe_m, sizeof(subscribe_m));
 
 	cfg.ttyspeed = strToNumber(speed);
 	cfg.ttytimeout = strToNumber(timeout);
 
 	cfg.conntimeout = strToNumber(timeout_s);
 	cfg.serverport  = strToNumber(port);
+
+	cfg.mqttinterval  = strToNumber(interval_m);
+	cfg.mqtttimeout  = strToNumber(timeout_m);
+	cfg.mqttqos  = strToNumber(qos_m);
+	cfg.mqttautoconn  = strToNumber(autoconn_m);
+	cfg.mqttautoconnmaxtime  = strToNumber(autoconnmaxtime_m);
+	cfg.mqttautoconninteval  = strToNumber(autoconninteval_m);
 
 	guci2_free(ctx);
 

@@ -7,11 +7,12 @@
 #include "sock.h"
 #include "conn.h"
 #include "queue.h"
+#include "mqtt.h"
+#include <gl/guci2.h>
 #ifdef LOG
 #  include "log.h"
 #endif
-#define PACKAGE   "GL-RS485"
-#define VERSION   "1.0"
+
 extern char logfullname[];
 int isdaemon = TRUE;
 
@@ -86,6 +87,7 @@ usage(char *exename)
    "  -p device  : set serial port device name (default %s)\n"
    "  -s speed   : set serial port speed (default %d)\n"
    "  -m mode    : set serial port mode (default %s)\n"
+   "  -B begin   : begin connection (socket/mqtt default socket)\n"
    "  -A address : set TCP server address to bind (default %s)\n"
    "  -P port    : set TCP server port number (default %d)\n"
    "  -M mode    : set socket connection mode\n"
@@ -115,10 +117,11 @@ usage(char *exename)
 int
 main(int argc, char *argv[])
 {
-  int err = 0, rc, err_line;
+  int err = 0, rc;
   char *exename;
   char ttyparity;
   char ttybuf[256] = {0};
+  char conn_type[10] ="socket";
 
   cfg_init();
 
@@ -136,7 +139,7 @@ main(int argc, char *argv[])
 #ifdef LOG
                "v:L:"
 #endif
-               "p:s:m:A:P:C:T:S:H:c:")) != RC_ERR)
+               "p:s:m:A:B:P:C:T:S:H:c:")) != RC_ERR)
   {
     switch (rc)
     {
@@ -272,6 +275,9 @@ main(int argc, char *argv[])
       case 'M':
         strncpy(cfg.connmode, optarg, INTBUFSIZE);
         break;
+      case 'B':
+        strncpy(conn_type, optarg, 10);
+        break;
       case 'h':
         usage(exename);
         break;
@@ -290,15 +296,6 @@ main(int argc, char *argv[])
   logw(2, "%s-%s started...", PACKAGE, VERSION);
 #endif
 
-  if (conn_init())
-  {
-#ifdef LOG
-    err = errno;
-    logw(2, "conn_init() failed, exiting...");
-#endif
-    exit(err);
-  }
-
   /* go or not to daemon mode? */
   if (isdaemon && (rc = daemon(TRUE, FALSE)))
   {
@@ -308,7 +305,29 @@ main(int argc, char *argv[])
     exit(rc);
   }
 
-  conn_loop();
+  if(!strcmp(conn_type,"mqtt")){
+	mqtt_loop();
+  }
+  else if(!strcmp(conn_type,"socket")){
+
+	if (conn_init()){
+		#ifdef LOG
+		err = errno;
+		logw(2, "conn_init() failed, exiting...");
+		#endif
+		exit(err);
+	}
+	conn_loop();
+  }
+
+  struct uci_context* ctx = guci2_init();
+
+  guci2_set(ctx, "rs485.socket.status", "0");
+  guci2_set(ctx, "rs485.mqtt.status", "0");
+
+  guci2_commit(ctx, "rs485");
+
+  guci2_free(ctx);
 
   err = errno;
 #ifdef LOG

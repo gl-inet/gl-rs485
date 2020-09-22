@@ -111,7 +111,33 @@ char  remove_blank(char *str)
     }
     return 0;
 }
-
+char  remove_blank1(char *str,int count)
+{
+    int i=0, is = -1, in = 0;
+    for (i=0;i<count;++i){
+        if (str[i] != ' '){
+            if (is != -1){
+                    str[is] = str[i];
+                    str[i] = ' ';
+                if (in == 1){
+                    is = i;
+                } else {
+                    ++is;
+                }
+            }
+        }
+        else if (is == -1){
+            is = i;
+            ++in;
+        } else {
+            ++in;
+        }
+    }
+    if (is != -1){
+        str[is] = '\0';
+    }
+    return 0;
+}
 unsigned char my_hex_str_to_i(char *s)
 {
 	unsigned char i,tmp=0,n;
@@ -368,7 +394,9 @@ int modify_rs485_temp_humi_id(json_object * input, json_object * output)
 
                 char alldata[10] = {0};
                 char alldata1[100] = {0};
+		memset(alldata1,0,100);
                 for(i=0;i<count;i++){
+			memset(alldata,0,10);
                         sprintf(alldata,"%02x ",rec_buff[i]);
                         strcat(alldata1,alldata);
                 }
@@ -476,7 +504,9 @@ char i = 0;
 	if((count>0)&&(reg_len>0)){
 		char alldata[10] = {0};
 		char alldata1[1024] = {0};
+		memset(alldata1,0,1024);
 		for(i=0;i<count;i++){
+			memset(alldata,0,10);
 			sprintf(alldata,"%02x ",rec_buff[i]);
 			strcat(alldata1,alldata);
 		}
@@ -590,7 +620,9 @@ int write_rs485_data(json_object * input, json_object * output)
         if((count>0)&&(write_len>0)){
                 char alldata[10] = {0};
                 char alldata1[1024] = {0};
+		memset(alldata1,0,1024);
                 for(i=0;i<count;i++){
+			memset(alldata,0,10);
                         sprintf(alldata,"%02x ",rec_buff[i]);
                         strcat(alldata1,alldata);
                 }
@@ -664,7 +696,9 @@ int get_dlt645_contact_addr(json_object * input, json_object * output)
                 char alldata[10] = {0};
                 char addr_data[20] = {0};
                 char alldata1[1024] = {0};
+		memset(alldata1,0,1024);
                 for(i=0;i<count;i++){
+			memset(alldata,0,10);
                         sprintf(alldata,"%02x ",rec_buff[i]);
                         strcat(alldata1,alldata);
                 }
@@ -785,11 +819,14 @@ int read_dlt645_data(json_object * input, json_object * output)
                 char rec_data[40] = {0};
                 char addr_data[20] = {0};
                 char alldata1[1024] = {0};
+		memset(alldata1,0,1024);
                 for(i=0;i<count;i++){
+			memset(alldata,0,10);
                         sprintf(alldata,"%02x ",rec_buff[i]);
                         strcat(alldata1,alldata);
                 }
                 for(i=1;i<7;i++){
+			memset(alldata,0,10);
                         sprintf(alldata,"%02x",rec_buff[i]);
                         strcat(addr_data,alldata);
                 }
@@ -905,8 +942,10 @@ int terminal_send_read(json_object * input, json_object * output)
 
         char alldata[10] = {0};
         char alldata1[1024] = {0};
+	memset(alldata1,0,1024);
         if(!strcmp(str_hex,"hex")){
 		for(i=0;i<count;i++){
+			memset(alldata,0,10);
 			sprintf(alldata,"%02x",rec_buff[i]);
 			strcat(alldata1,alldata);
 		}
@@ -926,6 +965,375 @@ int terminal_send_read(json_object * input, json_object * output)
 
 }
 
+
+/***
+ * @api {get} /rs485/mqtt/get  /rs485/mqtt/get
+ * @apiGroup rs485
+ * @apiVersion 1.0.0
+ * @apiDescription get rs485-mrtt config.
+ * @apiHeader {string} Authorization Users unique token.
+ * @apiSuccess {integer} code return code.
+ * @apiSuccess (Code) {integer} 0 success.
+ * @apiSuccess (Code) {integer} -1 Invalid user, permission denied or not logged in!
+ */
+int get_mqtt_config(json_object * input, json_object * output)
+{
+        struct uci_context* ctx = guci2_init();
+
+        char port_m[16] = {0};
+        char addr_m[48] = {0};
+        char timeout_m[16] = {0};
+        char qos_m[16] = {0};
+        char autoconn_m[16] = {0};
+        char autoconnmaxtime_m[16] = {0};
+        char autoconninteval_m[16] = {0};
+        char interval_m[16] = {0};
+        char username_m[32] = {0};
+        char password_m[32] = {0};
+        char clientid_m[32] = {0};
+        char publish_m[32] = {0};
+        char subscribe_m[32] = {0};
+
+        guci2_get(ctx, "rs485.mqtt.port", port_m);
+        guci2_get(ctx, "rs485.mqtt.address", addr_m);
+        guci2_get(ctx, "rs485.mqtt.timeout", timeout_m);
+        guci2_get(ctx, "rs485.mqtt.interval", interval_m);
+        guci2_get(ctx, "rs485.mqtt.username", username_m);
+        guci2_get(ctx, "rs485.mqtt.password", password_m);
+        guci2_get(ctx, "rs485.mqtt.qos", qos_m);
+        guci2_get(ctx, "rs485.mqtt.clientid", clientid_m);
+        guci2_get(ctx, "rs485.mqtt.publish", publish_m);
+        guci2_get(ctx, "rs485.mqtt.subscribe", subscribe_m);
+        guci2_get(ctx, "rs485.mqtt.autoconn", autoconn_m);
+        guci2_get(ctx, "rs485.mqtt.autoconninteval",autoconninteval_m);
+        guci2_get(ctx, "rs485.mqtt.autoconnmaxtime", autoconnmaxtime_m);
+
+
+        guci2_free(ctx);
+
+        json_object *rs485_mqtt_config = json_object_new_object();
+
+        gjson_add_string(rs485_mqtt_config, "port", port_m);
+        gjson_add_string(rs485_mqtt_config, "address", addr_m);
+        gjson_add_string(rs485_mqtt_config, "timeout", timeout_m);
+        gjson_add_string(rs485_mqtt_config, "interval", interval_m);
+        gjson_add_string(rs485_mqtt_config, "username", username_m);
+        gjson_add_string(rs485_mqtt_config, "password", password_m);
+        gjson_add_string(rs485_mqtt_config, "qos", qos_m);
+        gjson_add_string(rs485_mqtt_config, "clientid", clientid_m);
+        gjson_add_string(rs485_mqtt_config, "publish", publish_m);
+        gjson_add_string(rs485_mqtt_config, "subscribe", subscribe_m);
+        gjson_add_string(rs485_mqtt_config, "autoconn", autoconn_m);
+        gjson_add_string(rs485_mqtt_config, "autoconninteval",autoconninteval_m);
+        gjson_add_string(rs485_mqtt_config, "autoconnmaxtime", autoconnmaxtime_m);
+
+        gjson_add_object(output, "rs485_mqtt_config",rs485_mqtt_config);
+
+        return 0;
+}
+
+
+/***
+ * @api {post} /rs485/mqtt/set  /rs485/mqtt/set
+ * @apiGroup rs485
+ * @apiVersion 1.0.0
+ * @apiDescription set rs485_mqtt config.
+ * @apiHeader {string} Authorization Users unique token.
+ * @apiSuccess {integer} code return code.
+ * @apiSuccess (Code) {integer} 0 success.
+ * @apiSuccess (Code) {integer} -1 Invalid user, permission denied or not logged in!
+ */
+
+int set_mqtt_config(json_object * input, json_object * output)
+{
+
+        char *port_m = gjson_get_string(input, "port");
+        char *addr_m = gjson_get_string(input, "address");
+        char *timeout_m = gjson_get_string(input, "timeout");
+        char *interval_m = gjson_get_string(input, "interval");
+        char *username_m = gjson_get_string(input, "username");
+        char *password_m = gjson_get_string(input, "password");
+        char *qos_m = gjson_get_string(input, "qos");
+        char *clientid_m = gjson_get_string(input, "clientid");
+        char *publish_m = gjson_get_string(input, "publish");
+        char *subscribe_m = gjson_get_string(input, "subscribe");
+        char *autoconn_m = gjson_get_string(input, "autoconn");
+        char *autoconninteval_m = gjson_get_string(input, "autoconninteval");
+        char *autoconnmaxtime_m = gjson_get_string(input, "autoconnmaxtime");
+
+        struct uci_context* ctx = guci2_init();
+
+        guci2_set(ctx, "rs485.mqtt.port", port_m);
+        guci2_set(ctx, "rs485.mqtt.address", addr_m);
+        guci2_set(ctx, "rs485.mqtt.timeout", timeout_m);
+        guci2_set(ctx, "rs485.mqtt.interval", interval_m);
+        guci2_set(ctx, "rs485.mqtt.username", username_m);
+        guci2_set(ctx, "rs485.mqtt.password", password_m);
+        guci2_set(ctx, "rs485.mqtt.qos", qos_m);
+        guci2_set(ctx, "rs485.mqtt.clientid", clientid_m);
+        guci2_set(ctx, "rs485.mqtt.publish", publish_m);
+        guci2_set(ctx, "rs485.mqtt.subscribe", subscribe_m);
+        guci2_set(ctx, "rs485.mqtt.autoconn", autoconn_m);
+        guci2_set(ctx, "rs485.mqtt.autoconninteval",autoconninteval_m);
+        guci2_set(ctx, "rs485.mqtt.autoconnmaxtime", autoconnmaxtime_m);
+
+
+        guci2_commit(ctx, "rs485");
+
+        guci2_free(ctx);
+
+        return 0;
+}
+
+/***
+ * @api {get}  /rs485/socket/get /rs485/socket/get
+ * @apiGroup rs485
+ * @apiVersion 1.0.0
+ * @apiDescription get rs485_socket config.
+ * @apiHeader {string} Authorization Users unique token.
+ * @apiSuccess {integer} code return code.
+ * @apiSuccess (Code) {integer} 0 success.
+ * @apiSuccess (Code) {integer} -1 Invalid user, permission denied or not logged in!
+ */
+int get_socket_config(json_object * input, json_object * output)
+{
+        struct uci_context* ctx = guci2_init();
+        char addr[64] = {0};
+        char port[16] = {0};
+        char mode_s[16] = {0};
+        char timeout_s[16] = {0};
+
+        guci2_get(ctx, "rs485.socket.timeout", timeout_s);
+        guci2_get(ctx, "rs485.socket.mode", mode_s);
+        guci2_get(ctx, "rs485.socket.port", port);
+        guci2_get(ctx, "rs485.socket.address", addr);
+
+        guci2_free(ctx);
+
+        json_object *rs485_socket_config = json_object_new_object();
+        gjson_add_string(rs485_socket_config, "address", addr);
+        gjson_add_string(rs485_socket_config, "port", port);
+        gjson_add_string(rs485_socket_config, "mode", mode_s);
+        gjson_add_string(rs485_socket_config, "timeout", timeout_s);
+
+
+        gjson_add_object(output, "rs485_socket_config",rs485_socket_config);
+
+        return 0;
+}
+
+/***
+ * @api {post}   /rs485/socket/set  /rs485/socket/set
+ * @apiGroup rs485
+ * @apiVersion 1.0.0
+ * @apiDescription set rs485_cocket config.
+ * @apiHeader {string} Authorization Users unique token.
+ * @apiSuccess {integer} code return code.
+ * @apiSuccess (Code) {integer} 0 success.
+ * @apiSuccess (Code) {integer} -1 Invalid user, permission denied or not logged in!
+ */
+
+int set_socket_config(json_object * input, json_object * output)
+{
+        char *addr = gjson_get_string(input, "address");
+        char *port = gjson_get_string(input, "port");
+        char *mode_s = gjson_get_string(input, "mode");
+        char *timeout_s = gjson_get_string(input, "timeout");
+
+        struct uci_context* ctx = guci2_init();
+
+        guci2_set(ctx, "rs485.socket.timeout", timeout_s);
+        guci2_set(ctx, "rs485.socket.mode", mode_s);
+        guci2_set(ctx, "rs485.socket.port", port);
+        guci2_set(ctx, "rs485.socket.address", addr);
+
+        guci2_commit(ctx, "rs485");
+
+        guci2_free(ctx);
+
+        return 0;
+}
+
+
+/***
+ * @api {get}  /rs485/socket/start /rs485/socket/start
+ * @apiGroup rs485
+ * @apiVersion 1.0.0
+ * @apiDescription start rs485 to socket.
+ * @apiHeader {string} Authorization Users unique token.
+ * @apiSuccess {integer} code return code.
+ * @apiSuccess (Code) {integer} 0 success.
+ * @apiSuccess (Code) {integer} -1 Invalid user, permission denied or not logged in!
+ */
+int rs485_socket_start(json_object * input, json_object * output)
+{
+
+	char *rc =  getShellCommandReturnDynamic("gl-rs485 -B  socket");
+
+        struct uci_context* ctx = guci2_init();
+
+        guci2_set(ctx, "rs485.socket.status", "1");
+
+        guci2_commit(ctx, "rs485");
+
+        guci2_free(ctx);
+
+	if(rc==NULL){
+		gjson_add_string(output,"rs485_socket_start","ok");
+	}else{
+		gjson_add_string(output,"rs485_socket_start","error");
+	}
+
+	return 0;
+}
+
+
+/***
+ * @api {get}  /rs485/socket/stop /rs485/socket/stop
+ * @apiGroup rs485
+ * @apiVersion 1.0.0
+ * @apiDescription stop rs485 to socket.
+ * @apiHeader {string} Authorization Users unique token.
+ * @apiSuccess {integer} code return code.
+ * @apiSuccess (Code) {integer} 0 success.
+ * @apiSuccess (Code) {integer} -1 Invalid user, permission denied or not logged in!
+ */
+int rs485_socket_stop(json_object * input, json_object * output)
+{
+
+	char *rc =  getShellCommandReturnDynamic("pgrep rs485 | xargs  kill -9");
+	struct uci_context* ctx = guci2_init();
+
+	guci2_set(ctx, "rs485.socket.status", "0");
+	guci2_set(ctx, "rs485.mqtt.status", "0");
+
+	guci2_commit(ctx, "rs485");
+
+	guci2_free(ctx);
+
+	if(rc==NULL){
+		gjson_add_string(output,"rs485_stop","ok");
+	}else{
+		gjson_add_string(output,"rs485_stop","error");
+	}
+        return 0;
+}
+
+
+/***
+ * @api {get}  /rs485/socket/status /rs485/socket/status
+ * @apiGroup rs485
+ * @apiVersion 1.0.0
+ * @apiDescription get rs485 to socket status.
+ * @apiHeader {string} Authorization Users unique token.
+ * @apiSuccess {integer} code return code.
+ * @apiSuccess (Code) {integer} 0 success.
+ * @apiSuccess (Code) {integer} -1 Invalid user, permission denied or not logged in!
+ */
+int get_rs485_socket_status(json_object * input, json_object * output)
+{
+        struct uci_context* ctx = guci2_init();
+        char status[16] = {0};
+
+        guci2_get(ctx, "rs485.socket.status", status);
+
+        guci2_free(ctx);
+
+
+        gjson_add_string(output,"rs485_socket_status",status);
+
+        return 0;
+}
+
+
+
+/***
+ * @api {get}  /rs485/mqtt/start /rs485/mqtt/start
+ * @apiGroup rs485
+ * @apiVersion 1.0.0
+ * @apiDescription start rs485 to mqtt.
+ * @apiHeader {string} Authorization Users unique token.
+ * @apiSuccess {integer} code return code.
+ * @apiSuccess (Code) {integer} 0 success.
+ * @apiSuccess (Code) {integer} -1 Invalid user, permission denied or not logged in!
+ */
+int rs485_mqtt_start(json_object * input, json_object * output)
+{
+
+	char *rc =  getShellCommandReturnDynamic("gl-rs485 -B mqtt");
+        struct uci_context* ctx = guci2_init();
+
+        guci2_set(ctx, "rs485.mqtt.status", "1");
+
+        guci2_commit(ctx, "rs485");
+
+        guci2_free(ctx);
+	if(rc==NULL){
+		gjson_add_string(output,"rs485_mqtt_start","ok");
+	}else{
+		gjson_add_string(output,"rs485_mqtt_start","error");
+	}
+        return 0;
+}
+
+
+/***
+ * @api {get}  /rs485/mqtt/stop /rs485/mqtt/stop
+ * @apiGroup rs485
+ * @apiVersion 1.0.0
+ * @apiDescription stop rs485 to mqtt.
+ * @apiHeader {string} Authorization Users unique token.
+ * @apiSuccess {integer} code return code.
+ * @apiSuccess (Code) {integer} 0 success.
+ * @apiSuccess (Code) {integer} -1 Invalid user, permission denied or not logged in!
+ */
+int rs485_mqtt_stop(json_object * input, json_object * output)
+{
+	char *rc =  getShellCommandReturnDynamic("pgrep rs485 | xargs  kill -9");
+
+	struct uci_context* ctx = guci2_init();
+
+	guci2_set(ctx, "rs485.socket.status", "0");
+	guci2_set(ctx, "rs485.mqtt.status", "0");
+
+	guci2_commit(ctx, "rs485");
+
+	guci2_free(ctx);
+
+	if(rc==NULL){
+		gjson_add_string(output,"rs485_stop","ok");
+	}else{
+		gjson_add_string(output,"rs485_stop","error");
+	}
+        return 0;
+}
+
+
+/***
+ * @api {get}  /rs485/mqtt/status /rs485/mqtt/status
+ * @apiGroup rs485
+ * @apiVersion 1.0.0
+ * @apiDescription get rs485 to mqtt status.
+ * @apiHeader {string} Authorization Users unique token.
+ * @apiSuccess {integer} code return code.
+ * @apiSuccess (Code) {integer} 0 success.
+ * @apiSuccess (Code) {integer} -1 Invalid user, permission denied or not logged in!
+ */
+int get_rs485_mqtt_status(json_object * input, json_object * output)
+{
+	struct uci_context* ctx = guci2_init();
+        char status[16] = {0};
+
+        guci2_get(ctx, "rs485.mqtt.status", status);
+
+        guci2_free(ctx);
+
+
+	gjson_add_string(output,"rs485_mqtt_status",status);
+        return 0;
+}
+
+
 /** The implementation of the GetAPIFunctions function **/
 #include <gl/glapibase.h>
 
@@ -941,6 +1349,16 @@ static api_info_t gl_lstCgiApiFuctionInfo[] = {
 	map("/rs485/dlt645/contact_get", "get", get_dlt645_contact_addr),
 	map("/rs485/dlt645/data_read", "post", read_dlt645_data),
 	map("/rs485/terminal/send_read", "post", terminal_send_read),
+	map("/rs485/socket/get", "get", get_socket_config),
+	map("/rs485/socket/set", "post", set_socket_config),
+	map("/rs485/socket/start", "get", rs485_socket_start),
+	map("/rs485/socket/stop", "get", rs485_socket_stop),
+	map("/rs485/socket/status", "get", get_rs485_socket_status),
+	map("/rs485/mqtt/get", "get", get_mqtt_config),
+	map("/rs485/mqtt/set", "post", set_mqtt_config),
+	map("/rs485/mqtt/start", "get", rs485_mqtt_start),
+	map("/rs485/mqtt/stop", "get", rs485_mqtt_stop),
+	map("/rs485/mqtt/status", "get", get_rs485_mqtt_status),
 };
 
 api_info_t *get_api_entity(int *pLen)

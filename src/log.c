@@ -58,6 +58,7 @@ log_app(char *logname, char *string)
 void
 logw(int level, char *fmt, ...)
 {
+#ifdef LOG
 #ifdef HRDATE
   time_t tt;
   struct tm *t;
@@ -85,5 +86,7 @@ logw(int level, char *fmt, ...)
   if (!isdaemon) fprintf(stderr, "%s", str);
   if (*logfullname == '\0') return;
   log_app(logfullname, str);
+#endif
+  return;
 }
 #endif

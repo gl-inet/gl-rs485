@@ -3,9 +3,7 @@
 #define _LOG_H
 
 #include "globals.h"
-
-#define LOG 1
-#define DEBUG 1
+#include "cfg.h"
 
 extern int isdaemon;
 

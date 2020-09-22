@@ -2,6 +2,12 @@
 #ifndef _GLOBALS_H
 #define _GLOBALS_H
 
+
+#define LOG 1
+#define DEBUG 1
+#define PACKAGE   "GL-RS485"
+#define VERSION   "1.0"
+
 #ifdef HAVE_CONFIG_H
 #  include <config.h>
 #endif

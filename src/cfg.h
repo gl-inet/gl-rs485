@@ -7,7 +7,6 @@
 #include "tty.h"
 #include "conn.h"
 
-
 /* Global configuration storage structure */
 typedef struct
 {
@@ -40,6 +39,19 @@ typedef struct
   int maxtry;
   /* staled connection timeout (in sec) */
   int conntimeout;
+  int  mqttqos;
+  int  mqttautoconn;
+  int  mqttautoconnmaxtime;
+  int  mqttautoconninteval;
+  int mqtttimeout;
+  int mqttinterval;
+  char mqttaddr[INTBUFSIZE+1];
+  char mqttusername[INTBUFSIZE+1];
+  char mqttpassword[INTBUFSIZE+1];
+  char mqttsubscribe[INTBUFSIZE+1];
+  char mqttpublish[INTBUFSIZE+1];
+  char mqttclientid[INTBUFSIZE+1];
+
 } cfg_t;
 
 extern cfg_t cfg;

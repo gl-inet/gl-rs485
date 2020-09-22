@@ -8,7 +8,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=gl-rs485
-PKG_VERSION:=1.0
+PKG_VERSION:=1.1.0
 PKG_RELEASE:=1
 include $(INCLUDE_DIR)/package.mk
 
@@ -17,7 +17,7 @@ define Package/gl-rs485/Default
 	SECTION:=base
 	CATEGORY:=gl-inet
 	TITLE:=GL iNet rs485 1.0
-	DEPENDS:=+libblobmsg-json  +gl-util +libuci +libjson-c
+	DEPENDS:=+libblobmsg-json  +gl-util +libuci +libjson-c  +mqtt
 endef
 
 Package/gl-rs485 = $(Package/gl-rs485/Default)
