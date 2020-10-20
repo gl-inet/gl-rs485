@@ -21,10 +21,8 @@ queue_new_elem(queue_t *queue)
   conn_t *newconn = (conn_t *)malloc(sizeof(conn_t));
   if (!newconn)
   { /* Aborting program execution */
-#ifdef LOG
-    logw(0, "queue_new_elem(): out of memory for new element (%s)",
+    logw(2, "queue_new_elem(): out of memory for new element (%s)",
            strerror(errno));
-#endif
     exit(errno);
   }
   newconn->next = NULL;
@@ -34,9 +32,7 @@ queue_new_elem(queue_t *queue)
     queue->beg = newconn;
   queue->end = newconn;
   queue->len++;
-#ifdef DEBUG
-  logw(5, "queue_new_elem(): length now is %d", queue->len);
-#endif
+  logw(2, "queue_new_elem(): length now is %d", queue->len);
   return newconn;
 }
 
@@ -48,9 +44,7 @@ queue_delete_elem(queue_t *queue, conn_t *conn)
 {
   if (queue->len <= 0)
   { /* queue is empty */
-#ifdef LOG
-    logw(1, "queue_delete_elem(): queue empty!");
-#endif
+    logw(2, "queue_delete_elem(): queue empty!");
     return;
   }
   if (conn->prev == NULL)

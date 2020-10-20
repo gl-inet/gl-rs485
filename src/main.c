@@ -9,9 +9,7 @@
 #include "queue.h"
 #include "mqtt.h"
 #include <gl/guci2.h>
-#ifdef LOG
-#  include "log.h"
-#endif
+#include "log.h"
 
 extern char logfullname[];
 int isdaemon = TRUE;
@@ -66,30 +64,21 @@ usage(char *exename)
 {
   cfg_init();
   printf("%s-%s  \n\n"
-   "Usage: %s [-h] [-d] "
-#ifdef LOG
-   "[-L logfile] [-v level]\n"
-#endif
-   "             [-p device]  [-s speed] [-m mode]    [-t tty timeout]\n"
-   "             [-A address] [-P port]  [-C maxconn] [-T conn timeout]\n\n"
+   "Usage: %s [-h] [-d]\n"
+   "             [-L logfile] [-v level]\n"
+   "             [-p port   ] [-s speed] [-m mode] [-t tty timeout]\n"
+   "             [-A address] [-P port ] [-T conn timeout]\n\n"
    "Options:\n"
    "  -h         : this help\n"
    "  -d         : don't daemonize\n"
-#ifdef LOG
-   "  -L logfile : set log file name (default %s%s, \n"
-#ifdef DEBUG
-   "  -v level   : set log level (0-9, default %d, 0 - errors only)\n"
-#else
-   "  -v level   : set log level (0-2, default %d, 0 - errors only)\n"
-#endif
-#endif
-   "  -c cfgfile : read configuration from cfgfile\n"
-   "  -p device  : set serial port device name (default %s)\n"
+   "  -L logfile : set log file name (default %s%s) \n"
+   "  -v level   : set log level (0-5, default %d, 0 - no log)\n"
+   "  -p port    : set serial port device name (default %s)\n"
    "  -s speed   : set serial port speed (default %d)\n"
    "  -m mode    : set serial port mode (default %s)\n"
    "  -B begin   : begin connection (socket/mqtt default socket)\n"
-   "  -A address : set TCP server address to bind (default %s)\n"
-   "  -P port    : set TCP server port number (default %d)\n"
+   "  -A address : set TCP/UDP server address to bind (default %s)\n"
+   "  -P port    : set TCP/UDP server port number (default %d)\n"
    "  -M mode    : set socket connection mode\n"
    "  -S string  : send string & receive string \n"
    "  -H hex     : send hex &receive hex  \n"
@@ -99,17 +88,12 @@ usage(char *exename)
    "  -y         : enable RTS RS-485 data direction control using sysfs file, active transmit\n"
    "  -Y         : enable RTS RS-485 data direction control using sysfs file, active receive\n"
 #endif
-   "  -C maxconn : set maximum number of simultaneous TCP connections\n"
-   "               (1-%d, default %d)\n"
    "  -T timeout : set connection timeout value in seconds\n"
    "               (0-%d, default %d, 0 - no timeout)"
    "\n", PACKAGE, VERSION, exename,
-#ifdef LOG
       LOGPATH, LOGNAME, cfg.dbglvl,
-#endif
       cfg.ttyport, cfg.ttyspeed, cfg.ttymode,
       cfg.serveraddr, cfg.serverport,
-      MAX_MAXCONN, cfg.maxconn,
       MAX_CONNTIMEOUT, cfg.conntimeout);
   exit(0);
 }
@@ -136,10 +120,8 @@ main(int argc, char *argv[])
 #ifdef TRXCTL
                "ty:Y:"
 #endif
-#ifdef LOG
                "v:L:"
-#endif
-               "p:s:m:A:B:P:C:T:S:H:c:")) != RC_ERR)
+               "p:s:m:A:B:P:C:T:F:S:H:c:")) != RC_ERR)
   {
     switch (rc)
     {
@@ -164,20 +146,12 @@ main(int argc, char *argv[])
         strncpy(cfg.trxcntl_file, optarg, INTBUFSIZE);
 	break;
 #endif
-#ifdef LOG
       case 'v':
         cfg.dbglvl = (char)strtol(optarg, NULL, 0);
-#  ifdef DEBUG
-        if (cfg.dbglvl > 9)
+        if (cfg.dbglvl < 0 || cfg.dbglvl > 5)
         { /* report about invalid log level */
           printf("%s: -v: invalid loglevel value"
-                 " (%d, must be 0-9)\n", exename, cfg.dbglvl);
-#  else
-        if (cfg.dbglvl < 0 || cfg.dbglvl > 9)
-        { /* report about invalid log level */
-          printf("%s: -v: invalid loglevel value"
-                 " (%d, must be 0-2)\n", exename, cfg.dbglvl);
-#  endif
+                 " (%d, must be 0-5)\n", exename, cfg.dbglvl);
           exit(-1);
         }
         break;
@@ -197,7 +171,6 @@ main(int argc, char *argv[])
         }
         else strncpy(cfg.logname, optarg, INTBUFSIZE);
         break;
-#endif
       case 'p':
         if (*optarg != '/')
         { /* concatenate given port name with default
@@ -264,6 +237,10 @@ main(int argc, char *argv[])
           exit(-1);
         }
         break;
+      case 'F':
+	strncpy(ttybuf, optarg, 256);
+	tty_write_file(ttybuf);
+        exit(0);
       case 'S':
 	strncpy(ttybuf, optarg, 256);
         tty_write_read(ttybuf,strlen(ttybuf),'S');
@@ -284,7 +261,6 @@ main(int argc, char *argv[])
     }
   }
 
-#ifdef LOG
   if (log_init(cfg.logname) != RC_OK)
   {
     printf("%s: can't open logfile '%s' (%s), exiting...\n",
@@ -294,14 +270,11 @@ main(int argc, char *argv[])
     exit(-1);
   }
   logw(2, "%s-%s started...", PACKAGE, VERSION);
-#endif
 
   /* go or not to daemon mode? */
   if (isdaemon && (rc = daemon(TRUE, FALSE)))
   {
-#ifdef LOG
-    logw(0, "Can't be daemonized (%s), exiting...", strerror(errno));
-#endif
+    logw(5, "Can't be daemonized (%s), exiting...", strerror(errno));
     exit(rc);
   }
 
@@ -311,10 +284,8 @@ main(int argc, char *argv[])
   else if(!strcmp(conn_type,"socket")){
 
 	if (conn_init()){
-		#ifdef LOG
 		err = errno;
-		logw(2, "conn_init() failed, exiting...");
-		#endif
+		logw(4, "conn_init() failed, exiting...");
 		exit(err);
 	}
 	conn_loop();
@@ -330,8 +301,8 @@ main(int argc, char *argv[])
   guci2_free(ctx);
 
   err = errno;
-#ifdef LOG
   logw(2, "%s-%s exited...", PACKAGE, VERSION);
-#endif
   return (err);
 }
+
+

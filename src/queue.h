@@ -4,9 +4,7 @@
 
 #include "globals.h"
 #include "conn.h"
-#ifdef LOG
-#  include "log.h"
-#endif
+#include "log.h"
 
 /*
  * Queue parameters structure

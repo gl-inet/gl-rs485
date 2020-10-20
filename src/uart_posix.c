@@ -317,7 +317,33 @@ int32_t uartTx(uint32_t dataLength, uint8_t* data)
   //pthread_mutex_unlock(&lock);
   return (int32_t)dataToWrite;
 }
+int32_t MyuartTx(int32_t serialHandle,uint32_t dataLength, uint8_t* data)
+{
+  /** The amount of bytes written. */
+  size_t dataWritten;
+  /** The amount of bytes still needed to be written. */
+  size_t dataToWrite = dataLength;
 
+  if (serialHandle == -1) {
+    return -1;
+  }
+  //pthread_mutex_lock(&lock);
+  while (dataToWrite) {
+    dataWritten = write(serialHandle, (void*)data, dataToWrite);
+    if (-1 == dataWritten) {
+      if (EAGAIN == errno) {
+        continue;
+      } else { 
+        return -1;
+      }
+    } else {
+      dataToWrite -= dataWritten;
+      data += dataWritten;
+    }
+  }
+  //pthread_mutex_unlock(&lock);
+  return (int32_t)dataToWrite;
+}
 
 int32_t uartTxNonBlocking(uint32_t dataLength, uint8_t* data)
 {

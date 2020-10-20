@@ -30,10 +30,10 @@
 int get_rs485_attr(json_object * input, json_object * output)
 {
 	struct uci_context* ctx = guci2_init();
-	char device[16] = {0};
-	char speed[16] = {0};
-	char mode[16] = {0};
-	char timeout[16] = {0};
+	char device[INTBUFSIZE+1] = {0};
+	char speed[8] = {0};
+	char mode[8] = {0};
+	char timeout[8] = {0};
         guci2_get(ctx, "rs485.rs485.device", device);
         guci2_get(ctx, "rs485.rs485.speed", speed);
         guci2_get(ctx, "rs485.rs485.mode", mode);
@@ -138,6 +138,9 @@ char  remove_blank1(char *str,int count)
     }
     return 0;
 }
+
+
+
 unsigned char my_hex_str_to_i(char *s)
 {
 	unsigned char i,tmp=0,n;
@@ -159,7 +162,7 @@ unsigned char my_hex_str_to_i(char *s)
 
 unsigned char my_hex_str_to_i_l(char *s,unsigned char len,unsigned char offset)
 {
-        unsigned char i,m,tmp=0,n;
+        unsigned char i,tmp=0,n;
 
         for(i=0;i<len;i++)
         {
@@ -173,6 +176,45 @@ unsigned char my_hex_str_to_i_l(char *s,unsigned char len,unsigned char offset)
         }
         return tmp;
 }
+
+void gl_hex2str(uint8_t *input, int  input_len, char *output)
+{
+    char *Encode = "0123456789ABCDEF";
+    int i = 0, j = 0;
+
+    for (i = 0; i < input_len; i++) {
+        output[j++] = Encode[(input[i] >> 4) & 0xf];
+        output[j++] = Encode[(input[i]) & 0xf];
+    }
+}
+
+void gl_str2acsll(char  *str_in, int s_len, uint8_t  *acsll_out)
+{
+
+    uint8_t size1=0,i=0;
+    for( size1=0;size1<s_len; size1++ )
+    {
+                    
+        if(    str_in[size1]>='0' && str_in[size1] <= '9' )
+        {
+            acsll_out[size1] = str_in[size1] - '0';
+        }
+        else if(    str_in[size1]>='A' && str_in[size1] <= 'F' )
+        {
+            acsll_out[size1] = str_in[size1] - 'A'+10;
+        }
+        else if(    str_in[size1]>='a' && str_in[size1] <= 'f' )
+        {
+            acsll_out[size1] = str_in[size1] - 'a'+10;
+        }
+
+    }
+    for( size1=0,i=0;size1<=s_len; size1++,i++ )
+    {
+        acsll_out[i]=(acsll_out[size1]<<4)|acsll_out[++size1];            
+    }
+}
+
 /***
  * @api {post} /rs485/ele_meter_vol/get  /rs485/ele_meter_vol/get
  * @apiGroup rs485
@@ -190,7 +232,6 @@ int get_rs485_ele_meter_vol(json_object * input, json_object * output)
 
         int reg_len = 0;
         int fd  = -1;
-        int i  =  0;
         int ret = 8;
         int count = 0;
         int time_out = 0;
@@ -200,7 +241,6 @@ int get_rs485_ele_meter_vol(json_object * input, json_object * output)
         char *device_id = gjson_get_string(input, "device_id");
         unsigned char read_cmd[8] = {0,4,0,0,0,2,0,0};
         unsigned char rec_buff[20] = {0};
-        unsigned char fldatastr[40] = {0};
         read_cmd[0] = my_hex_str_to_i(device_id);
 
         crc_v=gl_crc16 (read_cmd, 6,0xa001);
@@ -351,12 +391,11 @@ int modify_rs485_temp_humi_id(json_object * input, json_object * output)
         int ret = 8;
         int count = 0;
         int time_out = 0;
-	int i =0;
         unsigned short crc_way = 0xa001;//modbus
         unsigned short crc_v = 0;
 
 	unsigned char read_cmd[16] = {0,0x10,0,2,0,1,2,0,0,0,0};
-	unsigned char rec_buff[20] = {0};
+	unsigned char rec_buff[64] = {0};
 	char *device_id = gjson_get_string(input, "device_id");
 	char *device_id_m = gjson_get_string(input, "device_id_m");
 	read_cmd[0] = my_hex_str_to_i(device_id);
@@ -391,16 +430,9 @@ int modify_rs485_temp_humi_id(json_object * input, json_object * output)
 
         reg_len = read_cmd[4]*256 + read_cmd[5];
         if((count>0)&&(reg_len>0)){
-
-                char alldata[10] = {0};
-                char alldata1[100] = {0};
-		memset(alldata1,0,100);
-                for(i=0;i<count;i++){
-			memset(alldata,0,10);
-                        sprintf(alldata,"%02x ",rec_buff[i]);
-                        strcat(alldata1,alldata);
-                }
-                gjson_add_string(output,"alldata",alldata1);
+		char alldata[128] = {0};
+		gl_hex2str(rec_buff,count,alldata);
+                gjson_add_string(output,"alldata",alldata);
 
 		if(rec_buff[0]==read_cmd[8]){
                         gjson_add_boolean(output,"modify_ok",1);
@@ -439,12 +471,10 @@ int modify_rs485_temp_humi_id(json_object * input, json_object * output)
  */
 int read_rs485_data(json_object * input, json_object * output)
 {
-char i = 0;
 	unsigned char read_cmd[10] = {0};
-	unsigned char rec_buff[270] = {0};
+	unsigned char rec_buff[512] = {0};
 	unsigned short crc_way = 0xa001;//modbus
 	unsigned short crc_v = 0;
-	ttydata_t rs485;
 	int reg_len = 0;
 	int fd  = -1;
 	int ret = 8;
@@ -502,15 +532,9 @@ char i = 0;
 
 	reg_len = read_cmd[5];
 	if((count>0)&&(reg_len>0)){
-		char alldata[10] = {0};
-		char alldata1[1024] = {0};
-		memset(alldata1,0,1024);
-		for(i=0;i<count;i++){
-			memset(alldata,0,10);
-			sprintf(alldata,"%02x ",rec_buff[i]);
-			strcat(alldata1,alldata);
-		}
-		gjson_add_string(rs485_data,"alldata",alldata1);
+		char alldata[1024] = {0};
+		gl_hex2str(rec_buff,count,alldata);
+		gjson_add_string(rs485_data,"alldata",alldata);
 
 		crc_v=gl_crc16 (rec_buff, count-2,crc_way);
 		if(crc_v==(rec_buff[count-2]+rec_buff[count-1]*256)){
@@ -552,8 +576,8 @@ int write_rs485_data(json_object * input, json_object * output)
 	int data_str_len = 0;
         unsigned short crc_way = 0xa001;//modbus
         unsigned short crc_v = 0;
-        unsigned char write_cmd[272] = {0};
-        unsigned char rec_buff[272] = {0};
+        unsigned char write_cmd[512] = {0};
+        unsigned char rec_buff[512] = {0};
         char *device_id = gjson_get_string(input, "device_id");
         char *func_code = gjson_get_string(input, "func_code");
         char *reg_addr_h = gjson_get_string(input, "reg_addr_h");
@@ -618,15 +642,9 @@ int write_rs485_data(json_object * input, json_object * output)
 	json_object *rs485_data = json_object_new_object();
 
         if((count>0)&&(write_len>0)){
-                char alldata[10] = {0};
-                char alldata1[1024] = {0};
-		memset(alldata1,0,1024);
-                for(i=0;i<count;i++){
-			memset(alldata,0,10);
-                        sprintf(alldata,"%02x ",rec_buff[i]);
-                        strcat(alldata1,alldata);
-                }
-                gjson_add_string(rs485_data,"alldata",alldata1);
+		char alldata[1024] = {0};
+		gl_hex2str(rec_buff,count,alldata);
+                gjson_add_string(rs485_data,"alldata",alldata);
 
                 crc_v=gl_crc16 (rec_buff, count-2,crc_way);
                 if(crc_v==(rec_buff[count-2]+rec_buff[count-1]*256)){
@@ -666,7 +684,7 @@ int get_dlt645_contact_addr(json_object * input, json_object * output)
 	unsigned char data_cs = 0;
 
 	unsigned char read_cmd[12] = {0x68,0xAA,0xAA,0xAA,0xAA,0xAA,0xAA,0x68,0x13,0x00,0xDF,0x16};
-	unsigned char rec_buff[50] = {0};
+	unsigned char rec_buff[64] = {0};
         cfg_init();
 
         fd = uartOpen(cfg.ttyport,cfg.ttyspeed,0,cfg.ttytimeout);
@@ -695,13 +713,8 @@ int get_dlt645_contact_addr(json_object * input, json_object * output)
         if(count>0){
                 char alldata[10] = {0};
                 char addr_data[20] = {0};
-                char alldata1[1024] = {0};
-		memset(alldata1,0,1024);
-                for(i=0;i<count;i++){
-			memset(alldata,0,10);
-                        sprintf(alldata,"%02x ",rec_buff[i]);
-                        strcat(alldata1,alldata);
-                }
+                char alldata1[128] = {0};
+		gl_hex2str(rec_buff,count,alldata1);
                 for(i=1;i<7;i++){
                         sprintf(alldata,"%02x",rec_buff[i]);
                         strcat(addr_data,alldata);
@@ -753,7 +766,7 @@ int read_dlt645_data(json_object * input, json_object * output)
         unsigned char data_cs = 0;
 
         unsigned char read_cmd[20] = {0x68,0xAA,0xAA,0xAA,0xAA,0xAA,0xAA,0x68,0};
-        unsigned char rec_buff[50] = {0};
+        unsigned char rec_buff[512] = {0};
 	
 	char *con_addr = gjson_get_string(input, "con_addr");
 	char *ctl_code = gjson_get_string(input, "ctl_code");
@@ -819,12 +832,9 @@ int read_dlt645_data(json_object * input, json_object * output)
                 char rec_data[40] = {0};
                 char addr_data[20] = {0};
                 char alldata1[1024] = {0};
-		memset(alldata1,0,1024);
-                for(i=0;i<count;i++){
-			memset(alldata,0,10);
-                        sprintf(alldata,"%02x ",rec_buff[i]);
-                        strcat(alldata1,alldata);
-                }
+
+		gl_hex2str(rec_buff,count,alldata1);
+
                 for(i=1;i<7;i++){
 			memset(alldata,0,10);
                         sprintf(alldata,"%02x",rec_buff[i]);
@@ -902,8 +912,8 @@ int terminal_send_read(json_object * input, json_object * output)
         int fd = 0;
         int ret = 8;
         int count = 0;
-        int i = 0;
         int nbytes = 0;
+	unsigned char write_data[512] = {0};
 
 	json_object *rs485_data = json_object_new_object();
 
@@ -922,16 +932,14 @@ int terminal_send_read(json_object * input, json_object * output)
                         printf("date len err\n");
                         return -1;
                 }
-                for(i=0;i<nbytes/2;i++){
-                        s_data[i] = my_hex_str_to_i_l(s_data,2,2*i);;
-                }
-                tty_write(fd,s_data,nbytes/2);
+		gl_hex2str(s_data,nbytes,write_data);
+                tty_write(fd,write_data,nbytes/2);
         }
         else{
 		nbytes = strlen(s_data);
                 tty_write(fd,s_data,nbytes);
         }
-        unsigned  char rec_buff[1024] = {0};
+        unsigned  char rec_buff[512] = {0};
         while(ret==8){
                 ret = MyuartRxExpires(fd,200,&rec_buff[0+count],cfg.ttytimeout);
                 count +=ret;
@@ -940,16 +948,10 @@ int terminal_send_read(json_object * input, json_object * output)
         usleep(1000);
         MyuartClose(fd);
 
-        char alldata[10] = {0};
-        char alldata1[1024] = {0};
-	memset(alldata1,0,1024);
         if(!strcmp(str_hex,"hex")){
-		for(i=0;i<count;i++){
-			memset(alldata,0,10);
-			sprintf(alldata,"%02x",rec_buff[i]);
-			strcat(alldata1,alldata);
-		}
-		gjson_add_string(rs485_data,"alldata",alldata1);
+		char alldata[1024] = {0};
+		gl_hex2str(rec_buff,count,alldata);
+		gjson_add_string(rs485_data,"alldata",alldata);
         }
         else{
                 printf("rec:%s\n",rec_buff);
@@ -980,19 +982,19 @@ int get_mqtt_config(json_object * input, json_object * output)
 {
         struct uci_context* ctx = guci2_init();
 
-        char port_m[16] = {0};
-        char addr_m[48] = {0};
-        char timeout_m[16] = {0};
-        char qos_m[16] = {0};
-        char autoconn_m[16] = {0};
-        char autoconnmaxtime_m[16] = {0};
-        char autoconninteval_m[16] = {0};
-        char interval_m[16] = {0};
-        char username_m[32] = {0};
-        char password_m[32] = {0};
-        char clientid_m[32] = {0};
-        char publish_m[32] = {0};
-        char subscribe_m[32] = {0};
+        char port_m[8] = {0};
+        char timeout_m[8] = {0};
+        char qos_m[8] = {0};
+        char autoconn_m[8] = {0};
+        char autoconnmaxtime_m[8] = {0};
+        char autoconninteval_m[8] = {0};
+        char interval_m[8] = {0};
+        char addr_m[INTBUFSIZE+1] = {0};
+        char username_m[INTBUFSIZE+1] = {0};
+        char password_m[INTBUFSIZE+1] = {0};
+        char clientid_m[INTBUFSIZE+1] = {0};
+        char publish_m[INTBUFSIZE+1] = {0};
+        char subscribe_m[INTBUFSIZE+1] = {0};
 
         guci2_get(ctx, "rs485.mqtt.port", port_m);
         guci2_get(ctx, "rs485.mqtt.address", addr_m);
@@ -1098,10 +1100,10 @@ int set_mqtt_config(json_object * input, json_object * output)
 int get_socket_config(json_object * input, json_object * output)
 {
         struct uci_context* ctx = guci2_init();
-        char addr[64] = {0};
-        char port[16] = {0};
-        char mode_s[16] = {0};
-        char timeout_s[16] = {0};
+        char port[8] = {0};
+        char mode_s[8] = {0};
+        char timeout_s[8] = {0};
+        char addr[INTBUFSIZE+1] = {0};
 
         guci2_get(ctx, "rs485.socket.timeout", timeout_s);
         guci2_get(ctx, "rs485.socket.mode", mode_s);
@@ -1334,6 +1336,70 @@ int get_rs485_mqtt_status(json_object * input, json_object * output)
 }
 
 
+/***
+ * @api {post}   /rs485/to/mqtt /rs485/to/mqtt
+ * @apiGroup rs485
+ * @apiVersion 1.0.0
+ * @apiDescription get rs485 data to gl mqtt.
+ * @apiHeader {string} Authorization Users unique token.
+ * @apiSuccess {integer} code return code.
+ * @apiSuccess (Code) {integer} 0 success.
+ * @apiSuccess (Code) {integer} -1 Invalid user, permission denied or not logged in!
+ */
+
+int get_rs485_data_to_gl_mqtt(json_object * input, json_object * output)
+{
+	char *rs485_cmd = gjson_get_string(input, "cmd");
+	int len = strlen(rs485_cmd);
+	remove_blank1(rs485_cmd,len);
+	int nbytes,ret,count,fd = 0;
+	nbytes = strlen(rs485_cmd);
+	unsigned char rs485_data[512] = {0};
+	if(nbytes%2){
+		gjson_add_string(output,"api","/rs485/to/mqtt");
+		gjson_add_string(output,"error","data format error");
+		logw(0,"date len err %d\n",nbytes);
+		return -1;
+	}
+
+	gl_str2acsll(rs485_cmd,nbytes,rs485_data);
+        cfg_init();
+        fd = uartOpen(cfg.ttyport,cfg.ttyspeed,0,cfg.ttytimeout);
+		
+	if(fd<0){
+		gjson_add_string(output,"api","/rs485/to/mqtt");
+		gjson_add_string(output,"error","open dev error");
+		return -2;
+	}
+	tty_write(fd,rs485_data,nbytes/2);
+	unsigned  char rec_buff[512] = {0};
+	count = 0;
+	ret = 8;
+	while(ret==8){
+		ret = MyuartRxExpires(fd,200,&rec_buff[0+count],cfg.ttytimeout);
+		if(ret>0){
+			count +=ret;
+		}
+	}
+	logw(0,"count:%d ret:%d\n",count,ret);
+        usleep(1000);
+        MyuartClose(fd);
+
+	if(count==0){
+		gjson_add_string(output,"error","read error");
+		gjson_add_string(output,"api","/rs485/to/mqtt");
+		return -3;
+	}
+
+        char alldata[1024] = {0};
+	gl_hex2str(rec_buff,count,alldata); 
+
+	gjson_add_string(output,"api","/rs485/to/mqtt");
+	gjson_add_string(output,"data",alldata);
+
+        return 0;
+}
+
 /** The implementation of the GetAPIFunctions function **/
 #include <gl/glapibase.h>
 
@@ -1359,6 +1425,7 @@ static api_info_t gl_lstCgiApiFuctionInfo[] = {
 	map("/rs485/mqtt/start", "get", rs485_mqtt_start),
 	map("/rs485/mqtt/stop", "get", rs485_mqtt_stop),
 	map("/rs485/mqtt/status", "get", get_rs485_mqtt_status),
+	map("/rs485/to/mqtt", "post", get_rs485_data_to_gl_mqtt),
 };
 
 api_info_t *get_api_entity(int *pLen)

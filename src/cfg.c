@@ -41,38 +41,36 @@ int strToNumber(char *numbers)
 void
 cfg_init(void)
 {
-#ifdef LOG
-  cfg.dbglvl = 2;
-  strncpy(cfg.logname, LOGNAME, INTBUFSIZE);
-#endif
 	struct uci_context* ctx = guci2_init();
 
-	char device[16] = {0};
-	char speed[16] = {0};
-	char mode[16] = {0};
-	char timeout[16] = {0};
-	char mode_s[16] = {0};
-	char timeout_s[16] = {0};
-	char port[16] = {0};
-	char addr[16] = {0};
-	char port_m[16] = {0};
-	char addr_m[48] = {0};
-	char timeout_m[16] = {0};
-	char qos_m[16] = {0};
-	char autoconn_m[16] = {0};
-	char autoconnmaxtime_m[16] = {0};
-	char autoconninteval_m[16] = {0};
-	char interval_m[16] = {0};
-	char username_m[32] = {0};
-	char password_m[32] = {0};
-	char clientid_m[32] = {0};
-	char publish_m[32] = {0};
-	char subscribe_m[32] = {0};
+	char speed[8] = {0};
+	char mode[8] = {0};
+	char logv[8] = {0};
+	char timeout[8] = {0};
+	char mode_s[8] = {0};
+	char timeout_s[8] = {0};
+	char port[8] = {0};
+	char port_m[8] = {0};
+	char timeout_m[8] = {0};
+	char qos_m[8] = {0};
+	char autoconn_m[8] = {0};
+	char autoconnmaxtime_m[8] = {0};
+	char autoconninteval_m[8] = {0};
+	char interval_m[8] = {0};
+	char device[INTBUFSIZE+1] = {0};
+	char addr[INTBUFSIZE+1] = {0};
+	char addr_m[INTBUFSIZE+1] = {0};
+	char username_m[INTBUFSIZE+1] = {0};
+	char password_m[INTBUFSIZE+1] = {0};
+	char clientid_m[INTBUFSIZE+1] = {0};
+	char publish_m[INTBUFSIZE+1] = {0};
+	char subscribe_m[INTBUFSIZE+1] = {0};
 
 	guci2_get(ctx, "rs485.rs485.device", device);
 	guci2_get(ctx, "rs485.rs485.speed", speed);
 	guci2_get(ctx, "rs485.rs485.mode", mode);
 	guci2_get(ctx, "rs485.rs485.timeout", timeout);
+	guci2_get(ctx, "rs485.rs485.log", logv);
 
 	guci2_get(ctx, "rs485.socket.timeout", timeout_s);
 	guci2_get(ctx, "rs485.socket.mode", mode_s);
@@ -94,6 +92,7 @@ cfg_init(void)
 	guci2_get(ctx, "rs485.mqtt.autoconnmaxtime", autoconnmaxtime_m);
 
   	strncpy(cfg.ttyport, device, sizeof(device));
+	strncpy(cfg.logname, LOGNAME, INTBUFSIZE);
 
   	strncpy(cfg.ttymode, mode, sizeof(mode));
 
@@ -109,6 +108,7 @@ cfg_init(void)
 
 	cfg.ttyspeed = strToNumber(speed);
 	cfg.ttytimeout = strToNumber(timeout);
+	cfg.dbglvl = strToNumber(logv);
 
 	cfg.conntimeout = strToNumber(timeout_s);
 	cfg.serverport  = strToNumber(port);

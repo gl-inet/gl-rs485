@@ -36,14 +36,11 @@ int tty_reopen()
   MyuartClose(tty.fd);
   if (tty_open(&tty) != RC_OK)
   {
-#ifdef LOG
-    logw(0, "tty_reopen():"
+    logw(3, "tty_reopen():"
            " can't open tty device %s (%s)",
            cfg.ttyport, strerror(errno));
-#endif
     return RC_ERR;
   }
-  state_tty_set(&tty, TTY_PAUSE);
   logw(0, "tty re-opened.");
   return RC_OK;
 }
@@ -65,23 +62,18 @@ conn_init(void)
   /* tty device initialization */
   if (tty_open(&tty) != RC_OK)
   {
-#ifdef LOG
-    logw(0, "conn_init():"
+    logw(4, "conn_init():"
            " can't open tty device %s (%s)",
            cfg.ttyport, strerror(errno));
-#endif
     return RC_ERR;
   }
-  state_tty_set(&tty, TTY_PAUSE);
 
   /* create server socket */
   if ((server_sd = sock_create_server(cfg.serveraddr, cfg.serverport, TRUE)) < 0)
   {
-#ifdef LOG
-    logw(0, "conn_init():"
+    logw(4, "conn_init():"
            " can't create listen socket (%s)",
            (errno != 0) ? strerror(errno) : "failed");
-#endif
     return RC_ERR;
   }
 
@@ -108,9 +100,7 @@ conn_open(void)
   if ((sd = sock_accept(server_sd, (struct sockaddr *)&rmt_addr,
                         sizeof(rmt_addr), TRUE)) == RC_ERR)
   { /* error in conn_accept() */
-#ifdef LOG
-    logw(0, "conn_open(): error in accept() (%s)", strerror(errno));
-#endif
+    logw(4, "conn_open(): error in accept() (%s)", strerror(errno));
     return;
   }
  }
@@ -119,26 +109,20 @@ conn_open(void)
  }
  inet_ntop(rmt_addr.ss_family, sock_addr((struct sockaddr *)&rmt_addr),
            ipstr, sizeof(ipstr));
-#ifdef LOG
-  logw(0, "conn_open(): accepting connection from %s", ipstr);
-#endif
+  logw(2, "conn_open(): accepting connection from %s", ipstr);
   /* compare descriptor of connection with FD_SETSIZE */
   if (sd >= FD_SETSIZE)
   {
-#ifdef LOG
-    logw(0, "conn_open(): FD_SETSIZE limit reached,"
+    logw(2, "conn_open(): FD_SETSIZE limit reached,"
            " connection from %s will be dropped", ipstr);
-#endif
     close(sd);
     return;
   }
   /* check current number of connections */
   if (queue.len == cfg.maxconn)
   {
-#ifdef LOG
-    logw(0, "conn_open(): number of connections limit reached,"
+    logw(2, "conn_open(): number of connections limit reached,"
            " connection from %s will be dropped", ipstr);
-#endif
     close(sd);
     return;
   }
@@ -158,9 +142,7 @@ conn_t *
 conn_close(conn_t *conn)
 {
   conn_t *nextconn;
-#ifdef LOG
-  logw(0, "conn_close(): closing connection from %s", conn->remote_addr);
-#endif
+  logw(3, "conn_close(): closing connection from %s", conn->remote_addr);
   /* close socket */
   close(conn->sd);
   /* get pointer to next element */
@@ -251,42 +233,33 @@ tty_write_read(char * buf, size_t nbytes,char type)
 	int fd = 0;
         int ret = 8;
         int count = 0;
-        int i = 0;
+	unsigned write_buff[512]={0};
 	fd = uartOpen(cfg.ttyport,cfg.ttyspeed,0,cfg.ttytimeout);
-
 
 	if(type=='H'){
 		if(nbytes%2){
 			printf("date len err\n");
 			return -1;
 		}
-		for(i=0;i<nbytes/2;i++){
-			buf[i] = my_hex_str_to_i_l(buf,2,2*i);;
-		}
-		tty_write(fd,buf,nbytes/2);
+		gl_str2acsll(buf,nbytes,write_buff);
+		tty_write(fd,write_buff,nbytes/2);
 	}
 	else{
 		tty_write(fd,buf,nbytes);
 	}
-	unsigned  char rec_buff[1024] = {0};
-//        while(ret==8){
-//                ret = MyuartRxExpires(fd,200,&rec_buff[0+count],cfg.ttytimeout);
-//                count +=ret;
-//        }
-	count= MyuartRxNonBlocking(fd,200, rec_buff);
+
+	unsigned  char rec_buff[512] = {0};
+        while(ret==8){
+                ret = MyuartRxExpires(fd,200,&rec_buff[0+count],cfg.ttytimeout);
+                count +=ret;
+        }
 	usleep(1000);
 	MyuartClose(fd);
 
-	char alldata[10] = {0};
-	char alldata1[1024] = {0};
-	memset(alldata1,0,1024);
 	if(type=='H'){
-		for(i=0;i<count;i++){
-			memset(alldata,0,10);
-			sprintf(alldata,"%02x",rec_buff[i]);
-			strcat(alldata1,alldata);
-		}
-		printf("rec:%s\n",alldata1);
+		char alldata[1024] = {0};
+		gl_hex2str(rec_buff,count,alldata);
+		printf("rec:%s\n",alldata);
 	}
 	else{
 		printf("rec:%s\n",rec_buff);
@@ -294,14 +267,70 @@ tty_write_read(char * buf, size_t nbytes,char type)
         return count;
 }
 
+ssize_t tty_write_file(char * file)
+{
+	char completion =0;
+	int up_cont=0;
+        int fd = 0;
+        FILE* fp = 0;
+        int read_count = 0;
+	int file_count =0;
+        unsigned char tx_buf[512]={0};
+
+        fd = uartOpen(cfg.ttyport,cfg.ttyspeed,0,cfg.ttytimeout);
+	fp=fopen(file,"rb");
+
+	if(NULL==fp){
+		printf("file open err,please check file & try again\n");
+		return -1;
+	}
+
+	fseek(fp,0,SEEK_END);
+
+	file_count = ftell(fp);
+
+	printf("file size : %d\n",file_count);
+	file_count =((file_count/512)+1)*512;
+
+	fseek(fp,0L,SEEK_SET);
+	while(1){
+            memset(tx_buf,'\0',sizeof(tx_buf));
+            read_count = fread(tx_buf,1, sizeof(tx_buf),fp);
+		printf("read : %d\n",read_count);
+
+            if(512==read_count){
+                MyuartTx(fd,512,tx_buf);
+	        usleep(1000);
+                up_cont++;
+                if(up_cont==(file_count/5120)){
+                    up_cont = 0;
+                    completion++;
+                    if(completion<=9)
+                        printf("completion : %d%%\n",completion*10);
+                }
+	    }
+            else if(512>read_count){
+                MyuartTx(fd,read_count,tx_buf);
+		printf("completion : 100%%\n");
+		break;
+	    }
+	}
+	sleep(1);
+	MyuartClose(fd);
+	fclose(fp);
+
+	char *date_rc =  getShellCommandReturnDynamic("date '+%Y-%m-%d %H:%M:%S'");
+	printf("MCU update completed:%s\n",date_rc);
+
+	return 0;
+
+}
+
 ssize_t
 conn_write(int d, void *buf, size_t nbytes, int istty)
 {
   int rc;
   fd_set fs;
-  struct timeval ts, tts;
-  long delay;
-
 #ifdef TRXCTL
   if (istty && cfg.trxcntl != TRX_ADDC)
   {
@@ -369,9 +398,7 @@ conn_loop(void)
   struct timeval ts, tts, t_out;
   unsigned long tval, tout_sec, tout = 0ul;
   conn_t *curconn = NULL;
-#ifdef LOG
   char t[1025], v[5];
-#endif
 
   while (TRUE)
   {
@@ -411,21 +438,15 @@ conn_loop(void)
 
     (void)gettimeofday(&ts, NULL); /* make timestamp */
 
-#ifdef LOG
-    logw(0, "conn_loop(): select(): max_sd = %d, t_out = %06lu:%06lu ",
+    logw(2, "conn_loop(): select(): max_sd = %d, t_out = %06lu:%06lu ",
            max_sd, t_out.tv_sec, t_out.tv_usec);
-#endif
     rc = select(max_sd + 1, &sdsetrd, &sdsetwr, NULL, &t_out);
-#ifdef LOG
-    logw(0, "conn_loop(): select() returns %d ", rc);
-#endif
+    logw(2, "conn_loop(): select() returns %d ", rc);
     if (rc < 0)
     { /* some error caused while select() */
       if (errno == EINTR) continue; /* process signals */
       /* unrecoverable error in select(), exiting */
-#ifdef LOG
-      logw(0, "conn_loop(): error in select() (%s)", strerror(errno));
-#endif
+      logw(4, "conn_loop(): error in select() (%s)", strerror(errno));
 /*      break; */
     }
 
@@ -449,15 +470,11 @@ conn_loop(void)
           { /* timeout expired */
             if (curconn->state == CONN_TTY)
             { /* deadlock in CONN_TTY state, make attempt to reinitialize serial port */
-#ifdef LOG
-              logw(0, "conn[%s]: state CONN_TTY deadlock.", curconn->remote_addr);
-#endif
+              logw(3, "conn[%s]: state CONN_TTY deadlock.", curconn->remote_addr);
               tty_reinit();
             }
             /* purge connection */
-#ifdef LOG
-            logw(2, "conn[%s]: timeout, closing connection", curconn->remote_addr);
-#endif
+            logw(3, "conn[%s]: timeout, closing connection", curconn->remote_addr);
             curconn = conn_close(curconn);
             continue;
           }
@@ -470,117 +487,108 @@ conn_loop(void)
     if (FD_ISSET(server_sd, &sdsetrd)) conn_open();
 
     if (rc == 0){
-sele:
       continue;	/* timeout caused, we will do select() again */
-}
+    }
     len = queue.len;
     curconn = queue.beg;
     while (len--)
     {
       switch (curconn->state)
       {
-        case CONN_HEADER:
+	case CONN_HEADER:
         case CONN_RQST_FUNC:
         case CONN_RQST_NVAL:
         case CONN_RQST_TAIL:
-          if (FD_ISSET(curconn->sd, &sdsetrd))
-          {
-            rc = conn_read(curconn->sd,
-                           curconn->buf + curconn->ctr,
-                           curconn->read_len - curconn->ctr);
-#ifdef LOG
-          logw(0, "conn read count (%d,%d)",rc,curconn->ctr);
-#endif
-	if (rc < 0)
-	{ // error - drop this connection and go to next queue element 
-		
-//		curconn = conn_close(curconn);
-//		break;
-	goto  sele;
-	}
-	else{
-    		FD_MSET(tty.fd, &sdsetwr);
-		tty.txlen = rc;
-		(void)memcpy((void *)(tty.txbuf),(void *)(curconn->buf), tty.txlen);
-
-#ifdef LOG
-		t[0] = '\0';
-		int i;
-		for (i = 0; i < rc; i++) {
-		  sprintf(v, "[%2.2x]", curconn->buf[i]);
-		  strncat(t, v, 1024-strlen(t));
-		}
-		logw(0, "conn[%s]: request: %s", curconn->remote_addr, t);
-#endif
-		//tty write
-		if (FD_ISSET(tty.fd, &sdsetwr)){
-			tcflush(tty.fd, TCIOFLUSH);
-		#ifdef LOG
-			  logw(0, "tty: in write ,len %d",tty.ptrbuf,tty.txlen,tty.ptrbuf);
-		#endif
-			  rc = tty_write(tty.fd, tty.txbuf + tty.ptrbuf,tty.txlen - tty.ptrbuf);
-			if (rc < 0)
-			{ /* error - make attempt to reinitialize serial port */
-		#ifdef LOG
-			  logw(0, "tty: error in write() (%s)", strerror(errno));
-		#endif
-			  tty_reinit();
+		if (FD_ISSET(curconn->sd, &sdsetrd)){
+			rc = conn_read(curconn->sd,curconn->buf + curconn->ctr,curconn->read_len - curconn->ctr);
+			logw(2, "conn read count (%d,%d)",rc,curconn->read_len);
+			if (rc < 0){ // error - drop this connection and go to next queue element 
+				curconn = conn_close(curconn);
+				break;
 			}
 			else{
-		#ifdef LOG
-			FD_MSET(tty.fd, &sdsetrd);
-			logw(0, "tty: written %d bytes", rc);
-		#endif
-			//read
-			    if (FD_ISSET(tty.fd, &sdsetrd))
-			    {
-				  logw(0, "ttttttttttttttttttttt    tty: in readyy2)");
-				rc = tty_read(tty.fd, tty.rxbuf + tty.ptrbuf,
-					       tty.rxlen - tty.ptrbuf + tty.rxoffset);
-				tty.rxlen = rc;
+				FD_MSET(tty.fd, &sdsetwr);
+				tty.txlen = rc;
+				memcpy((void *)(tty.txbuf),(void *)(curconn->buf), tty.txlen);
 
-
-				if (rc <= 0)
-				{ /* error - make attempt to reinitialize serial port */
-			#ifdef LOG
-				  logw(0, "tty: error in read() (%s)", rc ? strerror(errno) : "port closed");
-			#endif
-				  tty_reinit();
+				t[0] = '\0';
+				int i;
+				for (i = 0; i < rc; i++) {
+				  sprintf(v, "[%2.2x]", curconn->buf[i]);
+				  strncat(t, v, 1024-strlen(t));
 				}
-				else{
-				   (void)memcpy((void *)(curconn->buf) ,(void *)(tty.rxbuf), tty.rxlen);
+				logw(2, "conn[%s]: request: %s", curconn->remote_addr, t);
+
+				remove_blank1(tty.txbuf,tty.txlen);
+				tty.txlen = strlen(tty.txbuf);
+				if(tty.txlen%2){
+					strncpy(curconn->buf,"data format error",17);
+					tty.rxlen = 17;
+					logw(0,"data format error \n");
 					state_conn_set(curconn, CONN_RESP);
+					FD_MSET(curconn->sd, &sdsetwr);
+					goto socketsend;
 				}
-				logw(0, "tty: read %d bytes of %d, offset %d", tty.ptrbuf, tty.rxlen + tty.rxoffset, tty.rxoffset);
-			    }
+
+                		gl_str2acsll(tty.txbuf,tty.txlen,tty.writebuf);
+
+				//tty write
+				if (FD_ISSET(tty.fd, &sdsetwr)){
+
+					tcflush(tty.fd, TCIOFLUSH);
+					rc = tty_write(tty.fd, tty.writebuf ,tty.txlen/2);
+
+					if (rc < 0){
+						logw(3,"tty write error %d\n",rc);
+						strncpy(curconn->buf,"tty write error",15);
+						tty.rxlen = 15;
+						state_conn_set(curconn, CONN_RESP);
+						FD_MSET(curconn->sd, &sdsetwr);
+						goto socketsend;
+					}
+					else{
+						FD_MSET(tty.fd, &sdsetrd);
+						logw(2, "tty: write %d bytes", rc);
+						//tty read
+						if (FD_ISSET(tty.fd, &sdsetrd)){
+							rc = tty_read(tty.fd,tty.rxbuf,tty.rxlen);
+							tty.rxlen = rc;
+							logw(2, "tty:read bytes %d",tty.rxlen);
+							if (rc <= 0){ 
+								logw(0,"no data %d\n",rc);
+								strncpy(curconn->buf,"no data",7);
+								tty.rxlen = 7;
+								state_conn_set(curconn, CONN_RESP);
+							}
+							else{
+								gl_hex2str(tty.rxbuf,tty.rxlen,curconn->buf);
+								tty.rxlen *=2 ;
+								state_conn_set(curconn, CONN_RESP);
+							}
+							logw(2, "tty: read len %d \n",tty.rxlen);
+					    }
+					}
+				}//end tty write and read
 			}
 		}
-	    }
-	}
-
-          break;
-        case CONN_RESP:
-          if (FD_ISSET(curconn->sd, &sdsetwr))
-          {
-#ifdef LOG
-          logw(0,"conn write");
-#endif
-            rc = conn_write(curconn->sd,curconn->buf ,tty.rxlen, 0);
-            if (rc <= 0){
-              // error - drop this connection and go to next queue element 
-              curconn = conn_close(curconn);
-              break;
-            }
-              state_conn_set(curconn, CONN_HEADER);
-          }
-          break;
+		break;
+	case CONN_RESP:
+socketsend:
+		if (FD_ISSET(curconn->sd, &sdsetwr)){
+			rc = conn_write(curconn->sd,curconn->buf ,tty.rxlen, 0);
+			logw(2,"socket write len %d \n",rc);
+			if (rc <= 0){
+				// error - drop this connection and go to next queue element 
+				curconn = conn_close(curconn);
+				break;
+			}
+			state_conn_set(curconn, CONN_HEADER);
+		}
+		break;
       } // switch (curconn->state) 
       curconn = queue_next_elem(&queue, curconn);
     } // while (len--)
-
-
   } /* while (TRUE) */
-
   /* XXX some cleanup must be here */
 }
 

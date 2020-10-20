@@ -103,7 +103,7 @@ int32_t uartRxPeek(void);
  *  \return  The amount of bytes written or -1 on failure.
  **************************************************************************************************/
 int32_t uartTx(uint32_t dataLength, uint8_t* data);
-
+int32_t MyuartTx(int32_t serialHandle,uint32_t dataLength, uint8_t* data);
 /***********************************************************************************************//**
  *  \brief  Non-blocking write to serial port.
  *  \note  A truly non-blocking operation is possible only if uartOpen() is called with timeout

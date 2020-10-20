@@ -3,8 +3,6 @@
 #define _GLOBALS_H
 
 
-#define LOG 1
-#define DEBUG 1
 #define PACKAGE   "GL-RS485"
 #define VERSION   "1.0"
 
@@ -62,7 +60,7 @@
 #if defined(PATH_MAX)
 #  define INTBUFSIZE PATH_MAX
 #else
-#  define INTBUFSIZE 63
+#  define INTBUFSIZE 127
 #endif
 
 #endif

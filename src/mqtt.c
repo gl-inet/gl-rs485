@@ -8,16 +8,14 @@
 int mqtt_loop(void)
 {
         int fd = 0;
+        int i = 0;
         int ret = 8;
         int count = 0;
-        int i = 0;
-        int i1 = 0;
         int nbytes = 0;
 
-        char alldata[10] = {0};
-        char alldata1[1024] = {0};
-        unsigned char rec_buff[1024] = {0};
+        unsigned char rec_buff[512] = {0};
         unsigned char write_485data[1024] = {0};
+        unsigned char write_buff[512] = {0};
 
 start:
 	logw(0,"init  %s \n",cfg.mqttaddr);
@@ -44,7 +42,6 @@ start:
         MQTTClient_message* m = NULL;
         char* topicName = NULL;
         int topicLen;
-        char* subs_topic = "rs485cmd";
         rc = MQTTClient_subscribe(client, cfg.mqttsubscribe, cfg.mqttqos);
 	fd = uartOpen(cfg.ttyport,cfg.ttyspeed,0,cfg.ttytimeout);
         logw(0,"Good rc from subscribe rc was %d  fd was %d \n", rc,fd);
@@ -78,7 +75,7 @@ start:
 			logw(0,"Message received on topic %s is %d %s   \n", topicName, m->payloadlen, (char*)(m->payload));
 			if(m->payloadlen > 1024){
 				pubmsg.payload = "out len";
-				pubmsg.payloadlen = 8;
+				pubmsg.payloadlen = 7;
 				goto mqttsend;
 			}else{
 				strncpy(write_485data,(unsigned char*)(m->payload),m->payloadlen);
@@ -88,15 +85,13 @@ start:
 			nbytes = strlen(write_485data);
 			if(nbytes%2){
 				pubmsg.payload = "data format error";
-				pubmsg.payloadlen = 19;
+				pubmsg.payloadlen = 17;
 				logw(0,"date len err %d\n",nbytes);
 				goto mqttsend;
 			}
-			for(i1=0;i1<nbytes/2;i1++){
-				write_485data[i1] = my_hex_str_to_i_l(write_485data,2,2*i1);;
-			}
+			gl_str2acsll(write_485data,nbytes,write_buff);
+			tty_write(fd,write_buff,nbytes/2);
 
-			tty_write(fd,write_485data,nbytes/2);
 			count = 0;
 			ret = 8;
 			while(ret==8){
@@ -107,23 +102,22 @@ start:
 
 		
 			if(count > 0){
-				memset(alldata1,0,1024);
-				for(i=0;i<count;i++){
-					memset(alldata,0,10);
-					sprintf(alldata,"%02x ",rec_buff[i]);
-					strcat(alldata1,alldata);
-				}
-			        //  gjson_add_string(rs485_data,"alldata",alldata1);
-					pubmsg.payload = &alldata1;
-					pubmsg.payloadlen = strlen(alldata1);
+				char alldata[1024] = {0};
+				gl_hex2str(rec_buff,count,alldata);
+			        //  gjson_add_string(rs485_data,"alldata",alldata);
+					pubmsg.payload = &alldata;
+					pubmsg.payloadlen = strlen(alldata);
 				}
 			else{
 				pubmsg.payload = "no data";
-				pubmsg.payloadlen = 8;
+				pubmsg.payloadlen = 7;
 			}
 mqttsend:
 			pubmsg.qos = cfg.mqttqos;
 			pubmsg.retained = 0;
+//			topicName += 38;
+//			sprintf(cfg.mqttpublish,"%s%s","device/e4956e40b63b/rpc_x300b/response/",topicName);
+
 			rc = MQTTClient_publishMessage(client, cfg.mqttpublish, &pubmsg, &token);
 			logw(0,"rece  rc1 was %d  I:%d \n", rc,i);
 			logw(0,"Waiting for up to %d seconds for publication of %s\n"

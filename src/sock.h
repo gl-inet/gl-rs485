@@ -3,9 +3,7 @@
 #define _SOCKUTILS_H
 
 #include "globals.h"
-#ifdef LOG
-#  include "log.h"
-#endif
+#include "log.h"
 
 #define BACKLOG 5
 

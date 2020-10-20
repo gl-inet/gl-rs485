@@ -34,7 +34,7 @@
 /*
  * Maximum tty buffer size
  */
-#define TTY_BUFSIZE 256
+#define TTY_BUFSIZE 512
 
 /*
  * TRX control types
@@ -69,15 +69,11 @@ typedef struct
 #endif
   struct termios tios;          /* working termios structure */
   struct termios savedtios;     /* saved termios structure */
-  int state;                    /* current state */
-  unsigned int trynum;             /* try counter */
-//  unsigned long timer;          /* time tracking variable */
   unsigned int txlen;           /* tx data length */
   unsigned int rxlen;           /* rx data length */
-  unsigned char ptrbuf;         /* ptr in the buffer */
-  unsigned char rxoffset;       /* ptr in the buffer */
   unsigned char txbuf[TTY_BUFSIZE]; /* transmitting buffer */
   unsigned char rxbuf[TTY_BUFSIZE]; /* receiving buffer */
+  unsigned char writebuf[TTY_BUFSIZE]; 
 } ttydata_t;
 
 /* prototypes */

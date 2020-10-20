@@ -5,9 +5,7 @@
 #include "globals.h"
 #include "cfg.h"
 #include "sock.h"
-#ifdef LOG
 #include "log.h"
-#endif
 
 /*
  * Default values
@@ -24,14 +22,11 @@
 
 /* Max connection timeout, in secs */
 #ifndef MAX_CONNTIMEOUT
-#  define MAX_CONNTIMEOUT 1000
+#  define MAX_CONNTIMEOUT 86400
 #endif
 
 
-#define CRCSIZE 2       /* size (in bytes) of CRC */
-#define HDRSIZE 6       /* size (in bytes) of header */
-#define BUFSIZE 256     /* size (in bytes) of MODBUS data */
-#define RQSTSIZE (HDRSIZE + BUFSIZE - 2) /* size (in bytes) of MODBUS request */
+#define BUFSIZE 1024     /* size (in bytes) of MODBUS data */
 
 /*
  * Client connection FSM states
@@ -56,7 +51,7 @@ typedef struct conn_t
   char remote_addr[INET6_ADDRSTRLEN]; /* remote client address */
   int ctr;              /* counter of data in the buffer */
   int read_len;         /* length of modbus frame to read */
-  unsigned char buf[HDRSIZE + BUFSIZE];    /* data buffer */
+  unsigned char buf[BUFSIZE];    /* data buffer */
 } conn_t;
 
 /* prototypes */
@@ -65,5 +60,6 @@ void conn_loop(void);
 void conn_open(void);
 conn_t *conn_close(conn_t *conn);
 ssize_t tty_write_read(char *buf, size_t nbytes,char type);
+ssize_t tty_write_file(char * file);
 
 #endif /* _CONN_H */
