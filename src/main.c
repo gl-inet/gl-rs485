@@ -88,7 +88,7 @@ usage(char *exename)
    "  -y         : enable RTS RS-485 data direction control using sysfs file, active transmit\n"
    "  -Y         : enable RTS RS-485 data direction control using sysfs file, active receive\n"
 #endif
-   "  -T timeout : set connection timeout value in seconds\n"
+   "  -T timeout : set socket timeout value in seconds\n"
    "               (0-%d, default %d, 0 - no timeout)"
    "\n", PACKAGE, VERSION, exename,
       LOGPATH, LOGNAME, cfg.dbglvl,
@@ -278,7 +278,11 @@ main(int argc, char *argv[])
     exit(rc);
   }
 
+  struct uci_context* ctx = guci2_init();
+
   if(!strcmp(conn_type,"mqtt")){
+	guci2_set(ctx, "rs485.mqtt.status", "1");
+	guci2_commit(ctx, "rs485");
 	mqtt_loop();
   }
   else if(!strcmp(conn_type,"socket")){
@@ -288,10 +292,10 @@ main(int argc, char *argv[])
 		logw(4, "conn_init() failed, exiting...");
 		exit(err);
 	}
+	guci2_set(ctx, "rs485.socket.status", "1");
+	guci2_commit(ctx, "rs485");
 	conn_loop();
   }
-
-  struct uci_context* ctx = guci2_init();
 
   guci2_set(ctx, "rs485.socket.status", "0");
   guci2_set(ctx, "rs485.mqtt.status", "0");

@@ -252,7 +252,7 @@ int get_rs485_ele_meter_vol(json_object * input, json_object * output)
         fd = uartOpen(cfg.ttyport,cfg.ttyspeed,0,cfg.ttytimeout);
         if(fd < 0 )
         {
-                return -1;
+                return 0;
         }
 
         while( flock(fd,LOCK_EX|LOCK_NB) != 0 ){//get file lock
@@ -329,7 +329,7 @@ int get_rs485_temp_humi(json_object * input, json_object * output)
         fd = uartOpen(cfg.ttyport,cfg.ttyspeed,0,cfg.ttytimeout);
         if(fd < 0 )
         {
-                return -1;
+                return 1;
         }
 
         while( flock(fd,LOCK_EX|LOCK_NB) != 0 ){//get file lock
@@ -410,7 +410,7 @@ int modify_rs485_temp_humi_id(json_object * input, json_object * output)
         fd = uartOpen(cfg.ttyport,cfg.ttyspeed,0,cfg.ttytimeout);
         if(fd < 0 )
         {
-                return -1;
+                return 1;
         }
 
         while( flock(fd,LOCK_EX|LOCK_NB) != 0 ){//get file lock
@@ -510,7 +510,7 @@ int read_rs485_data(json_object * input, json_object * output)
 	fd = uartOpen(cfg.ttyport,cfg.ttyspeed,0,cfg.ttytimeout);
 	if(fd < 0 )
 	{
-		return -1;
+		return 1;
 	}
 	
 	while( flock(fd,LOCK_EX|LOCK_NB) != 0 ){//get file lock
@@ -621,7 +621,7 @@ int write_rs485_data(json_object * input, json_object * output)
         fd = uartOpen(cfg.ttyport,cfg.ttyspeed,0,cfg.ttytimeout);
         if(fd < 0 )
         {
-                return -1;
+                return 1;
         }
 
         while( flock(fd,LOCK_EX|LOCK_NB) != 0 ){//get file lock
@@ -690,7 +690,7 @@ int get_dlt645_contact_addr(json_object * input, json_object * output)
         fd = uartOpen(cfg.ttyport,cfg.ttyspeed,0,cfg.ttytimeout);
         if(fd < 0 )
         {
-                return -1;
+                return 1;
         }
 
         while( flock(fd,LOCK_EX|LOCK_NB) != 0 ){//get file lock
@@ -804,7 +804,7 @@ int read_dlt645_data(json_object * input, json_object * output)
         fd = uartOpen(cfg.ttyport,cfg.ttyspeed,0,cfg.ttytimeout);
         if(fd < 0 )
         {
-                return -1;
+                return 1;
         }
 
         while( flock(fd,LOCK_EX|LOCK_NB) != 0 ){//get file lock
@@ -930,9 +930,9 @@ int terminal_send_read(json_object * input, json_object * output)
 		nbytes = strlen(s_data);
                 if(nbytes%2){
                         printf("date len err\n");
-                        return -1;
+                        return 1;
                 }
-		gl_hex2str(s_data,nbytes,write_data);
+		gl_str2acsll(s_data,nbytes,write_data);
                 tty_write(fd,write_data,nbytes/2);
         }
         else{
@@ -1359,7 +1359,7 @@ int get_rs485_data_to_gl_mqtt(json_object * input, json_object * output)
 		gjson_add_string(output,"api","/rs485/to/mqtt");
 		gjson_add_string(output,"error","data format error");
 		logw(0,"date len err %d\n",nbytes);
-		return -1;
+		return 1;
 	}
 
 	gl_str2acsll(rs485_cmd,nbytes,rs485_data);

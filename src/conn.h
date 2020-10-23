@@ -26,7 +26,7 @@
 #endif
 
 
-#define BUFSIZE 1024     /* size (in bytes) of MODBUS data */
+#define BUFSIZE 262     /* size (in bytes) of MODBUS data */
 
 /*
  * Client connection FSM states

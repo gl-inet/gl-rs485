@@ -88,6 +88,7 @@ conn_init(void)
  * Parameters: none
  * Return: none
  */
+char one_time = 1;
 void
 conn_open(void)
 {
@@ -105,26 +106,37 @@ conn_open(void)
   }
  }
  else{
-   sd = server_sd;
+	if(one_time){
+		one_time = 0;
+		sd = server_sd;
+		newconn = queue_new_elem(&queue);
+		newconn->sd = sd;
+		memcpy((void *) &newconn->remote_addr, cfg.serveraddr, sizeof(newconn->remote_addr));
+		state_conn_set(newconn, CONN_HEADER);
+		logw(2, "conn_open(): connection \n");
+	}
+   return;
  }
  inet_ntop(rmt_addr.ss_family, sock_addr((struct sockaddr *)&rmt_addr),
            ipstr, sizeof(ipstr));
   logw(2, "conn_open(): accepting connection from %s", ipstr);
   /* compare descriptor of connection with FD_SETSIZE */
-  if (sd >= FD_SETSIZE)
-  {
-    logw(2, "conn_open(): FD_SETSIZE limit reached,"
-           " connection from %s will be dropped", ipstr);
-    close(sd);
-    return;
-  }
-  /* check current number of connections */
-  if (queue.len == cfg.maxconn)
-  {
-    logw(2, "conn_open(): number of connections limit reached,"
-           " connection from %s will be dropped", ipstr);
-    close(sd);
-    return;
+ if(!strncmp(cfg.connmode,"tcps",4)){
+	  if (sd >= FD_SETSIZE)
+	  {
+	    logw(2, "conn_open(): FD_SETSIZE limit reached,"
+		   " connection from %s will be dropped", ipstr);
+	    close(sd);
+	    return;
+	  }
+	  /* check current number of connections */
+	  if (queue.len == cfg.maxconn)
+	  {
+	    logw(2, "conn_open(): number of connections limit reached,"
+		   " connection from %s will be dropped", ipstr);
+	    close(sd);
+	    return;
+	  }
   }
   /* enqueue connection */
   newconn = queue_new_elem(&queue);
@@ -237,6 +249,8 @@ tty_write_read(char * buf, size_t nbytes,char type)
 	fd = uartOpen(cfg.ttyport,cfg.ttyspeed,0,cfg.ttytimeout);
 
 	if(type=='H'){
+		remove_blank1(buf,nbytes);
+		nbytes  = strlen(buf);
 		if(nbytes%2){
 			printf("date len err\n");
 			return -1;
@@ -392,14 +406,13 @@ conn_select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
 void
 conn_loop(void)
 {
-  int rc, max_sd, len, min_timeout;
+  int rc,max_sd, len, min_timeout;
   unsigned int i;
   fd_set sdsetrd, sdsetwr;
   struct timeval ts, tts, t_out;
   unsigned long tval, tout_sec, tout = 0ul;
   conn_t *curconn = NULL;
   char t[1025], v[5];
-
   while (TRUE)
   {
     /* update FD_SETs */
@@ -440,6 +453,7 @@ conn_loop(void)
 
     logw(2, "conn_loop(): select(): max_sd = %d, t_out = %06lu:%06lu ",
            max_sd, t_out.tv_sec, t_out.tv_usec);
+
     rc = select(max_sd + 1, &sdsetrd, &sdsetwr, NULL, &t_out);
     logw(2, "conn_loop(): select() returns %d ", rc);
     if (rc < 0)
@@ -447,7 +461,7 @@ conn_loop(void)
       if (errno == EINTR) continue; /* process signals */
       /* unrecoverable error in select(), exiting */
       logw(4, "conn_loop(): error in select() (%s)", strerror(errno));
-/*      break; */
+      return ;
     }
 
     /* calculating elapsed time */
@@ -476,7 +490,7 @@ conn_loop(void)
             /* purge connection */
             logw(3, "conn[%s]: timeout, closing connection", curconn->remote_addr);
             curconn = conn_close(curconn);
-            continue;
+            return;
           }
           curconn = queue_next_elem(&queue, curconn);
         }
@@ -487,8 +501,10 @@ conn_loop(void)
     if (FD_ISSET(server_sd, &sdsetrd)) conn_open();
 
     if (rc == 0){
+sele:
       continue;	/* timeout caused, we will do select() again */
     }
+
     len = queue.len;
     curconn = queue.beg;
     while (len--)
@@ -500,27 +516,38 @@ conn_loop(void)
         case CONN_RQST_NVAL:
         case CONN_RQST_TAIL:
 		if (FD_ISSET(curconn->sd, &sdsetrd)){
-			rc = conn_read(curconn->sd,curconn->buf + curconn->ctr,curconn->read_len - curconn->ctr);
+			memset(curconn->buf,'\0',sizeof(curconn->buf));
+			rc = conn_read(curconn->sd,curconn->buf,256);
 			logw(2, "conn read count (%d,%d)",rc,curconn->read_len);
 			if (rc < 0){ // error - drop this connection and go to next queue element 
-				curconn = conn_close(curconn);
-				break;
+			//	curconn = conn_close(curconn);
+			//	break;
+                                        logw(3,"go to sele  \n");
+				goto sele;
 			}
 			else{
+				if(rc==0){
+                                        logw(3,"tcp/udp close \n");
+				        curconn = conn_close(curconn);
+					break;
+				}
 				FD_MSET(tty.fd, &sdsetwr);
 				tty.txlen = rc;
+				memset(tty.txbuf,'\0',sizeof(tty.txbuf));
 				memcpy((void *)(tty.txbuf),(void *)(curconn->buf), tty.txlen);
 
-				t[0] = '\0';
+/*				t[0] = '\0';
 				int i;
 				for (i = 0; i < rc; i++) {
 				  sprintf(v, "[%2.2x]", curconn->buf[i]);
 				  strncat(t, v, 1024-strlen(t));
-				}
-				logw(2, "conn[%s]: request: %s", curconn->remote_addr, t);
+				  }  */
+				//logw(2, "conn[%s]: request: %s", curconn->remote_addr, t);
+				logw(2, "conn[%s]: request: %s", curconn->remote_addr, curconn->buf);
 
 				remove_blank1(tty.txbuf,tty.txlen);
 				tty.txlen = strlen(tty.txbuf);
+				
 				if(tty.txlen%2){
 					strncpy(curconn->buf,"data format error",17);
 					tty.rxlen = 17;
@@ -551,6 +578,7 @@ conn_loop(void)
 						logw(2, "tty: write %d bytes", rc);
 						//tty read
 						if (FD_ISSET(tty.fd, &sdsetrd)){
+						//	memset(tty.rxbuf,'\0',sizeof(tty.rxbuf));
 							rc = tty_read(tty.fd,tty.rxbuf,tty.rxlen);
 							tty.rxlen = rc;
 							logw(2, "tty:read bytes %d",tty.rxlen);
@@ -561,6 +589,7 @@ conn_loop(void)
 								state_conn_set(curconn, CONN_RESP);
 							}
 							else{
+								memset(curconn->buf,'\0',sizeof(curconn->buf));
 								gl_hex2str(tty.rxbuf,tty.rxlen,curconn->buf);
 								tty.rxlen *=2 ;
 								state_conn_set(curconn, CONN_RESP);

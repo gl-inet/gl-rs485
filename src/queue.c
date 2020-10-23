@@ -62,10 +62,8 @@ queue_delete_elem(queue_t *queue, conn_t *conn)
   else
     conn->next->prev = conn->prev;
   queue->len--;
-  free((void *)conn);
-#ifdef DEBUG  
-  logw(5, "queue_delete_elem(): length now is %d", queue->len);
-#endif
+  free(conn);
+  logw(2, "queue_delete_elem(): length now is %d", queue->len);
   return;
 }
 

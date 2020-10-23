@@ -156,7 +156,7 @@ sock_create_server(char *server_ip, unsigned short server_port, int blkmode)
   }
 
   /* bind socket to given address and port */
- if((!strncmp(cfg.connmode,"udps",4))||(!(strncmp(cfg.connmode,"tcps",4)))){
+ if((!strncmp(cfg.connmode,"udp",3))||(!(strncmp(cfg.connmode,"tcps",4)))){
 
   if (bind(server_s, (struct sockaddr *)&server_sockaddr,
            sa_len((struct sockaddr *)&server_sockaddr)) == -1)
