@@ -107,8 +107,14 @@ cfg_init(void)
   	strncpy(cfg.mqttsubscribe, subscribe_m, sizeof(subscribe_m));
 
 	cfg.ttyspeed = strToNumber(speed);
+	if(cfg.ttyspeed>115200){
+		cfg.ttyspeed =115200;
+	}
 	cfg.ttytimeout = strToNumber(timeout);
 	cfg.dbglvl = strToNumber(logv);
+	if(cfg.dbglvl>5){
+		cfg.dbglvl =5;
+	}
 
 	cfg.conntimeout = strToNumber(timeout_s);
 	cfg.serverport  = strToNumber(port);

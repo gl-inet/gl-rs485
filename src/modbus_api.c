@@ -657,7 +657,7 @@ int write_rs485_data(json_object * input, json_object * output)
                 }
         }
         else{
-                gjson_add_string(rs485_data,"error","read fail");
+                gjson_add_string(rs485_data,"error","write fail");
         }
         gjson_add_object(output, "rs485_data",rs485_data);
 
