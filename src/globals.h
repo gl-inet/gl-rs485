@@ -60,7 +60,7 @@
 #if defined(PATH_MAX)
 #  define INTBUFSIZE PATH_MAX
 #else
-#  define INTBUFSIZE 127
+#  define INTBUFSIZE 128
 #endif
 
 #endif

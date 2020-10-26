@@ -1359,7 +1359,7 @@ int get_rs485_data_to_gl_mqtt(json_object * input, json_object * output)
 		gjson_add_string(output,"api","/rs485/to/mqtt");
 		gjson_add_string(output,"error","data format error");
 		logw(0,"date len err %d\n",nbytes);
-		return 1;
+		return -1;
 	}
 
 	gl_str2acsll(rs485_cmd,nbytes,rs485_data);
