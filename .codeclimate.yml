@@ -1,0 +1,15 @@
+version: "2"
+plugins:
+  cppcheck:
+    check: all
+    enabled: true
+    config:
+      language: c
+      max_configs: force
+      inconclusive: false
+      suppressions-list: ./.cppcheck-suppressions
+      inline-suppr: true
+      stds:
+        - c11
+      undefines:
+        - CONFIG_PID_FILE_FORMAT

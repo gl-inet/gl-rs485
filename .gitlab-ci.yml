@@ -1,0 +1,28 @@
+# use the official gcc image, based on debian
+# can use verions as well, like gcc:5.2
+# see https://hub.docker.com/_/gcc/
+image: gcc
+
+stages:
+  - quality
+  - build
+
+include:
+  - template: Code-Quality.gitlab-ci.yml
+
+code_quality:
+  stage: quality
+  tags:
+    - gl_router_runner
+  artifacts:
+    expose_as: 'Code Quality Report'
+    paths: [gl-code-quality-report.json]
+
+
+compile:
+  stage: build
+  tags:
+    - gl_router_runner
+  script:
+    - cd /home/luo/openwrt;make ./package/gli-pri/gl-rs485/compile
+
