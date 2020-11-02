@@ -14,6 +14,8 @@ code_quality:
   stage: quality
   tags:
     - gl_router_runner
+  script:
+    - codeclimate  analyze -f json  ./ >./gl-code-quality-report.json
   artifacts:
     expose_as: 'Code Quality Report'
     paths: [gl-code-quality-report.json]
@@ -23,6 +25,11 @@ compile:
   stage: build
   tags:
     - gl_router_runner
+  only:
+    refs:
+      - master
   script:
-    - cd /home/luo/openwrt;make ./package/gli-pri/gl-rs485/compile
+    - echo $CI_PROJECT_NAME
+    - echo $CI_PROJECT_DIR
+    - cd /home/luo/runner-script;./router_package_ci "$CI_PROJECT_NAME" "$CI_PROJECT_DIR"
 
