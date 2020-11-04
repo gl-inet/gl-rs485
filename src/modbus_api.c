@@ -209,9 +209,10 @@ void gl_str2acsll(char  *str_in, int s_len, uint8_t  *acsll_out)
         }
 
     }
-    for( size1=0,i=0;size1<=s_len; size1++,i++ )
+    for( size1=0,i=0;size1<=s_len;i++ )
     {
-        acsll_out[i]=(acsll_out[size1]<<4)|acsll_out[++size1];            
+        acsll_out[i]=(acsll_out[size1]<<4)|acsll_out[size1+1];            
+	size1+=2;
     }
 }
 
@@ -236,7 +237,6 @@ int get_rs485_ele_meter_vol(json_object * input, json_object * output)
         int count = 0;
         int time_out = 0;
         unsigned int f_data = 0;
-        unsigned short crc_way = 0xa001;//modbus
         unsigned short crc_v = 0;
         char *device_id = gjson_get_string(input, "device_id");
         unsigned char read_cmd[8] = {0,4,0,0,0,2,0,0};
@@ -271,10 +271,11 @@ int get_rs485_ele_meter_vol(json_object * input, json_object * output)
         MyuartClose(fd);
 
         reg_len = read_cmd[4]*256 + read_cmd[5];
-        if((count>0)&&(reg_len>0)){
+        if((count>5)&&(reg_len>0)){
                 f_data = rec_buff[3]*(1<<24)+rec_buff[4]*(1<<16)+rec_buff[5]*256+rec_buff[6];
                 gjson_add_double(output, "vol",(*(float*)(&f_data)));
 
+		unsigned short crc_way = 0xa001;//modbus
                 crc_v=gl_crc16 (rec_buff, count-2,crc_way);
                 if(crc_v==(rec_buff[count-2]+rec_buff[count-1]*256)){
                         gjson_add_boolean(output,"crc_ok",1);
@@ -312,8 +313,6 @@ int get_rs485_temp_humi(json_object * input, json_object * output)
         int ret = 8;
         int count = 0;
         int time_out = 0;	
-	int t_data = 0;
-        unsigned short crc_way = 0xa001;//modbus
         unsigned short crc_v = 0;
         char *device_id = gjson_get_string(input, "device_id");
 	unsigned char read_cmd[8] = {0,3,0,0,0,2,0,0};
@@ -348,7 +347,8 @@ int get_rs485_temp_humi(json_object * input, json_object * output)
         MyuartClose(fd);
 
 	reg_len = read_cmd[4]*256 + read_cmd[5];
-	if((count>0)&&(reg_len>0)){
+	if((count>5)&&(reg_len>0)){
+		int t_data = 0;
 		t_data = rec_buff[3]*256+rec_buff[4];
 		if(t_data>0x7fff){
 			t_data = t_data - 0xffff;
@@ -356,6 +356,7 @@ int get_rs485_temp_humi(json_object * input, json_object * output)
 		gjson_add_double(output, "tempdata",(t_data/10.0));
 		gjson_add_double(output, "humidata",(rec_buff[5]*256+rec_buff[6])/10.0);
 
+		unsigned short crc_way = 0xa001;//modbus
 		crc_v=gl_crc16 (rec_buff, count-2,crc_way);
                 if(crc_v==(rec_buff[count-2]+rec_buff[count-1]*256)){
                         gjson_add_boolean(output,"crc_ok",1);
@@ -391,7 +392,6 @@ int modify_rs485_temp_humi_id(json_object * input, json_object * output)
         int ret = 8;
         int count = 0;
         int time_out = 0;
-        unsigned short crc_way = 0xa001;//modbus
         unsigned short crc_v = 0;
 
 	unsigned char read_cmd[16] = {0,0x10,0,2,0,1,2,0,0,0,0};
@@ -429,7 +429,7 @@ int modify_rs485_temp_humi_id(json_object * input, json_object * output)
         MyuartClose(fd);
 
         reg_len = read_cmd[4]*256 + read_cmd[5];
-        if((count>0)&&(reg_len>0)){
+        if((count>1)&&(reg_len>0)){
 		char alldata[128] = {0};
 		gl_hex2str(rec_buff,count,alldata);
                 gjson_add_string(output,"alldata",alldata);
@@ -443,6 +443,7 @@ int modify_rs485_temp_humi_id(json_object * input, json_object * output)
 
 		}
 
+		unsigned short crc_way = 0xa001;//modbus
                 crc_v=gl_crc16 (rec_buff, count-2,crc_way);
                 if(crc_v==(rec_buff[count-2]+rec_buff[count-1]*256)){
                         gjson_add_boolean(output,"crc_ok",1);
@@ -473,7 +474,6 @@ int read_rs485_data(json_object * input, json_object * output)
 {
 	unsigned char read_cmd[10] = {0};
 	unsigned char rec_buff[512] = {0};
-	unsigned short crc_way = 0xa001;//modbus
 	unsigned short crc_v = 0;
 	int reg_len = 0;
 	int fd  = -1;
@@ -495,6 +495,7 @@ int read_rs485_data(json_object * input, json_object * output)
 	read_cmd[4] = 0;
 	read_cmd[5] = my_hex_str_to_i(reg_len_l);
 
+	unsigned short crc_way = 0xa001;//modbus
 	crc_v=gl_crc16 (read_cmd, 6,crc_way);
 	read_cmd[6]=crc_v%256;
 	read_cmd[7]=crc_v/256;
@@ -531,7 +532,7 @@ int read_rs485_data(json_object * input, json_object * output)
 	json_object *rs485_data = json_object_new_object();
 
 	reg_len = read_cmd[5];
-	if((count>0)&&(reg_len>0)){
+	if((count>1)&&(reg_len>0)){
 		char alldata[1024] = {0};
 		gl_hex2str(rec_buff,count,alldata);
 		gjson_add_string(rs485_data,"alldata",alldata);
@@ -574,7 +575,6 @@ int write_rs485_data(json_object * input, json_object * output)
         int time_out = 0;
 	int write_len = 0;
 	int data_str_len = 0;
-        unsigned short crc_way = 0xa001;//modbus
         unsigned short crc_v = 0;
         unsigned char write_cmd[512] = {0};
         unsigned char rec_buff[512] = {0};
@@ -641,11 +641,12 @@ int write_rs485_data(json_object * input, json_object * output)
 
 	json_object *rs485_data = json_object_new_object();
 
-        if((count>0)&&(write_len>0)){
+        if((count>1)&&(write_len>0)){
 		char alldata[1024] = {0};
 		gl_hex2str(rec_buff,count,alldata);
                 gjson_add_string(rs485_data,"alldata",alldata);
 
+		unsigned short crc_way = 0xa001;//modbus
                 crc_v=gl_crc16 (rec_buff, count-2,crc_way);
                 if(crc_v==(rec_buff[count-2]+rec_buff[count-1]*256)){
                         gjson_add_boolean(rs485_data,"crc_ok",1);
@@ -676,12 +677,10 @@ int write_rs485_data(json_object * input, json_object * output)
  */
 int get_dlt645_contact_addr(json_object * input, json_object * output)
 {
-	int i = 0;
         int fd  = -1;
         int ret = 8;
         int count = 0;
         int time_out = 0;
-	unsigned char data_cs = 0;
 
 	unsigned char read_cmd[12] = {0x68,0xAA,0xAA,0xAA,0xAA,0xAA,0xAA,0x68,0x13,0x00,0xDF,0x16};
 	unsigned char rec_buff[64] = {0};
@@ -710,11 +709,12 @@ int get_dlt645_contact_addr(json_object * input, json_object * output)
 
         json_object *rs485_data = json_object_new_object();
 
-        if(count>0){
+        if(count>1){
                 char alldata[10] = {0};
                 char addr_data[20] = {0};
                 char alldata1[128] = {0};
 		gl_hex2str(rec_buff,count,alldata1);
+		char i = 0;
                 for(i=1;i<7;i++){
                         sprintf(alldata,"%02x",rec_buff[i]);
                         strcat(addr_data,alldata);
@@ -722,6 +722,7 @@ int get_dlt645_contact_addr(json_object * input, json_object * output)
                 gjson_add_string(rs485_data,"alldata",alldata1);
                 gjson_add_string(rs485_data,"addr_data",addr_data);
 		
+		unsigned char data_cs = 0;
                 for(i=0;i<count-2;i++){
 			data_cs += rec_buff[i];
                 }
@@ -763,7 +764,6 @@ int read_dlt645_data(json_object * input, json_object * output)
         int count = 0;
         int time_out = 0;
         int datalen = 0;
-        unsigned char data_cs = 0;
 
         unsigned char read_cmd[20] = {0x68,0xAA,0xAA,0xAA,0xAA,0xAA,0xAA,0x68,0};
         unsigned char rec_buff[512] = {0};
@@ -824,12 +824,10 @@ int read_dlt645_data(json_object * input, json_object * output)
 
         json_object *rs485_data = json_object_new_object();
 
-        if(count>0){
+        if(count>1){
                 char rec_ctl_code[4] = {0};
                 char rec_data_len[4] = {0};
-                char rec_data_iden[10] = {0};
                 char alldata[10] = {0};
-                char rec_data[40] = {0};
                 char addr_data[20] = {0};
                 char alldata1[1024] = {0};
 
@@ -850,12 +848,14 @@ int read_dlt645_data(json_object * input, json_object * output)
                 gjson_add_string(rs485_data,"ctl_code",rec_ctl_code);
                 gjson_add_string(rs485_data,"data_len",rec_data_len);
 
+		unsigned char data_cs = 0;
                 for(i=0;i<count-2;i++){
                         data_cs += rec_buff[i];
                 }
 
 		datalen = rec_buff[9];		
 		if(datalen > 0){
+			char rec_data_iden[10] = {0};
 			for(i=0;i<4;i++){
 				rec_buff[13-i] -=0x33;
 				sprintf(alldata,"%02x",rec_buff[13-i]);
@@ -865,6 +865,7 @@ int read_dlt645_data(json_object * input, json_object * output)
 		}
 
 		if(datalen > 4){
+			char rec_data[40] = {0};
 			for(i=0;i<datalen-4;i++){
 				rec_buff[datalen+9-i] -=0x33;
 				sprintf(alldata,"%02x",rec_buff[datalen+9-i]);
@@ -913,7 +914,6 @@ int terminal_send_read(json_object * input, json_object * output)
         int ret = 8;
         int count = 0;
         int nbytes = 0;
-	unsigned char write_data[512] = {0};
 
 	json_object *rs485_data = json_object_new_object();
 
@@ -932,6 +932,7 @@ int terminal_send_read(json_object * input, json_object * output)
                         printf("date len err\n");
                         return 1;
                 }
+		unsigned char write_data[512] = {0};
 		gl_str2acsll(s_data,nbytes,write_data);
                 tty_write(fd,write_data,nbytes/2);
         }
