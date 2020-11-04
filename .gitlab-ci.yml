@@ -31,5 +31,7 @@ compile:
   script:
     - echo $CI_PROJECT_NAME
     - echo $CI_PROJECT_DIR
-    - cd /home/luo/runner-script;./router_package_ci "$CI_PROJECT_NAME" "$CI_PROJECT_DIR"
+    - echo $CI_COMMIT_SHORT_SHA
+    - echo $CI_COMMIT_MESSAGE
+    - cd /home/luo/runner-script;./router_package_ci "$CI_PROJECT_NAME" "$CI_PROJECT_DIR" "$CI_COMMIT_SHORT_SHA" "$CI_COMMIT_MESSAGE"
 
