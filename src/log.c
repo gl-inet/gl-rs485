@@ -217,10 +217,10 @@ int easylog_flag_add(int flag) {
     return 0;
 }
 
-int easylog_flag_rm(int flag) {
-    g_master_flag &= ~flag;
+//int easylog_flag_rm(int flag) {
+//    g_master_flag &= ~flag;
 
-    return 0;
-}
+//   return 0;
+//}
 
 

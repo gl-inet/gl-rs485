@@ -245,7 +245,6 @@ tty_write_read(char * buf, size_t nbytes,char type)
 	int fd = 0;
         int ret = 8;
         int count = 0;
-	unsigned write_buff[512]={0};
 	fd = uartOpen(cfg.ttyport,cfg.ttyspeed,0,cfg.ttytimeout);
 
 	if(type=='H'){
@@ -255,6 +254,7 @@ tty_write_read(char * buf, size_t nbytes,char type)
 			printf("date len err\n");
 			return -1;
 		}
+		unsigned write_buff[512]={0};
 		gl_str2acsll(buf,nbytes,write_buff);
 		tty_write(fd,write_buff,nbytes/2);
 	}
@@ -287,7 +287,6 @@ ssize_t tty_write_file(char * file)
 	int up_cont=0;
         int fd = 0;
         FILE* fp = 0;
-        int read_count = 0;
 	int file_count =0;
         unsigned char tx_buf[512]={0};
 
@@ -307,6 +306,7 @@ ssize_t tty_write_file(char * file)
 	file_count =((file_count/512)+1)*512;
 
 	fseek(fp,0L,SEEK_SET);
+        int read_count = 0;
 	while(1){
             memset(tx_buf,'\0',sizeof(tx_buf));
             read_count = fread(tx_buf,1, sizeof(tx_buf),fp);

@@ -56,11 +56,7 @@
 #define RC_AOPEN   -4
 #define RC_ACLOSE  -5
 
-/* Internal string buffers size */
-#if defined(PATH_MAX)
-#  define INTBUFSIZE PATH_MAX
-#else
-#  define INTBUFSIZE 128
-#endif
+/* Internal string buffers size  web input len*4 */
+#  define INTBUFSIZE  512
 
 #endif

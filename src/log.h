@@ -26,7 +26,7 @@ extern const char* g_master_lev;
 #define LOG_FILE_MAX_SIZE   512000000UL
 
 int easylog_flag_add(int flag);
-int easylog_flag_rm(int flag);
+//int easylog_flag_rm(int flag);
 int easylog_file(const char * logfile);
 int easylog_write(char level ,const char * fmt, ...);
 
