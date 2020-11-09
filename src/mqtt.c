@@ -35,8 +35,13 @@ start:
 
 	if ((rc = MQTTClient_connect(client, &conn_opts)) != MQTTCLIENT_SUCCESS)
 	{
-		logw(4,"Failed to connect, return code %d\n", rc);
-		return -1;
+		if(mqttautoconntime ==0){
+			logw(4,"Failed to connect, return code %d\n", rc);
+			return -1;
+		}
+		else{
+			logw(3,"Failed to connect, auto connect time : %d\n", mqttautoconntime);
+		}
 	}
 
         MQTTClient_message* m = NULL;
