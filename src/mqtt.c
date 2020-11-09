@@ -75,6 +75,9 @@ start:
 			}
 
 		}
+		else{
+			mqttautoconntime = 0;
+		}
 
 		if(topicName){
 			logw(1,"Message received on topic %s is %d %s   \n", topicName, m->payloadlen, (char*)(m->payload));
