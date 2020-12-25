@@ -119,3 +119,4 @@ int32_t uartTxNonBlocking(uint32_t dataLength, uint8_t* data);
 /** @} (end addtogroup platform_hw) */
 
 #endif /* UART_H */
+

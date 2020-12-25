@@ -1,4 +1,3 @@
-
 #ifndef _GLOBALS_H
 #define _GLOBALS_H
 
@@ -60,3 +59,4 @@
 #  define INTBUFSIZE  512
 
 #endif
+

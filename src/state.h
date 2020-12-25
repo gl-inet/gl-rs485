@@ -1,4 +1,3 @@
-
 #ifndef _STATE_H
 #define _STATE_H
 
@@ -11,3 +10,4 @@
 void state_conn_set(conn_t *conn, int state);
 
 #endif /* _STATE_H */
+
