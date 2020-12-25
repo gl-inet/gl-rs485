@@ -1,4 +1,3 @@
-
 #ifndef _SOCKUTILS_H
 #define _SOCKUTILS_H
 
@@ -20,3 +19,4 @@ int sock_accept(int server_sd, struct sockaddr *rmt_addr, socklen_t rmt_len, int
 void *sock_addr(struct sockaddr *sa);
 
 #endif
+

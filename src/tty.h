@@ -1,4 +1,3 @@
-
 #ifndef _TTY_H
 #define _TTY_H
 
@@ -89,3 +88,4 @@ void tty_clr_rts(int fd);
 void tty_delay(int usec);
 
 #endif /* _TTY_H */
+

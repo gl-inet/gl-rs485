@@ -27,37 +27,36 @@ char logfullname[INTBUFSIZE + 1];
 
 int log_init(char *logname)
 {
-  int maxlen = INTBUFSIZE;
+    int maxlen = INTBUFSIZE;
 
-  /* checking log file name */
-  if (*logname == '/')
-    strncpy(logfullname, logname, maxlen);
-  else
-  {
-    if (!*logname)
-    {
-      /* logfile isn't needed */
-      *logfullname = '\0';
-      return RC_OK;
+    /* checking log file name */
+    if (*logname == '/')
+        strncpy(logfullname, logname, maxlen);
+    else {
+        if (!*logname) {
+            /* logfile isn't needed */
+            *logfullname = '\0';
+            return RC_OK;
+        }
+        /* append default log path */
+        strncpy(logfullname, LOGPATH, maxlen);
+        maxlen -= strlen(logfullname);
+        strncat(logfullname, logname, maxlen);
     }
-    /* append default log path */ 
-    strncpy(logfullname, LOGPATH, maxlen);
-    maxlen -= strlen(logfullname);
-    strncat(logfullname, logname, maxlen);
-  }
-  easylog_file(logfullname);
-  easylog_flag_add(EASYLOG_LEVEL|EASYLOG_DATE|EASYLOG_TIME|EASYLOG_FILE|EASYLOG_LINE|EASYLOG_FUNC);
-  return RC_OK;
+    easylog_file(logfullname);
+    easylog_flag_add(EASYLOG_LEVEL|EASYLOG_DATE|EASYLOG_TIME|EASYLOG_FILE|EASYLOG_LINE|EASYLOG_FUNC);
+    return RC_OK;
 }
 
 
-int get_my_name(char * file_name, int len) {
-    if(NULL == file_name || len < 0) {   
-        return -1; 
-    }   
+int get_my_name(char * file_name, int len)
+{
+    if(NULL == file_name || len < 0) {
+        return -1;
+    }
     int ret = readlink("/proc/self/exe", file_name, len);
-    if(ret < 0) {   
-        return -1; 
+    if(ret < 0) {
+        return -1;
     }
     file_name[ret] = '\0';
     strcat(file_name, ".log");
@@ -65,7 +64,8 @@ int get_my_name(char * file_name, int len) {
     return 0;
 }
 
-int easylog_file(const char * logfile) {
+int easylog_file(const char * logfile)
+{
     if(NULL == logfile || strlen(logfile) == 0) {
         return get_my_name(g_logfile, sizeof(g_logfile));
     }
@@ -74,7 +74,8 @@ int easylog_file(const char * logfile) {
     return 0;
 }
 
-int easylog_open_file() {
+int easylog_open_file()
+{
     if(strlen(g_logfile) == 0) {
         easylog_file(NULL);
     }
@@ -89,27 +90,28 @@ int easylog_open_file() {
     fseek(g_master_fp,0,SEEK_END);
     length=ftell(g_master_fp);
 
-    if (length > LOG_FILE_MAX_SIZE){
-	fclose(g_master_fp);
-	int c = 0;
-    	FILE *f1 = fopen(g_logfile, "r");
-    	FILE *f2 = fopen(g_logfile1, "w");
+    if (length > LOG_FILE_MAX_SIZE) {
+        fclose(g_master_fp);
+        int c = 0;
+        FILE *f1 = fopen(g_logfile, "r");
+        FILE *f2 = fopen(g_logfile1, "w");
         while((c = fgetc(f1)) != EOF)
-		fputc(c,f2);
-	fclose(f1);
-	fclose(f2);
+            fputc(c,f2);
+        fclose(f1);
+        fclose(f2);
 
-	remove(g_logfile);
-	g_master_fp = fopen(g_logfile, "at");
-	if(NULL == g_master_fp) {
-		return -1;
-	}
+        remove(g_logfile);
+        g_master_fp = fopen(g_logfile, "at");
+        if(NULL == g_master_fp) {
+            return -1;
+        }
     }
     g_master_fd = fileno(g_master_fp);
     return 0;
 }
 
-int file_stat_ok() {
+int file_stat_ok()
+{
     if(NULL == g_master_fp) {
         return 0;
     }
@@ -123,7 +125,8 @@ int file_stat_ok() {
     return 0;
 }
 
-int easylog_write_log(const char * fmt, va_list arg_list) {
+int easylog_write_log(const char * fmt, va_list arg_list)
+{
     if (0 == file_stat_ok()) {
         easylog_open_file();
     }
@@ -156,18 +159,18 @@ int easylog_write_log(const char * fmt, va_list arg_list) {
         fprintf(g_master_fp, "%s", "-- ");
     }
     if (g_master_flag & EASYLOG_LEVEL && NULL != g_master_lev) {
-	if(!strcmp(g_master_lev,"DEBUG"))
-		fprintf(g_master_fp, "\033[37m");
-	else if(!strcmp(g_master_lev,"INFO"))
-		fprintf(g_master_fp, "\033[32m");
-	else if(!strcmp(g_master_lev,"WARNING"))
-		fprintf(g_master_fp, "\033[33m");
-	else if(!strcmp(g_master_lev,"ERROR"))
-		fprintf(g_master_fp, "\033[31m");
-	else if(!strcmp(g_master_lev,"CRITICAL"))
-		fprintf(g_master_fp, "\033[31;45m");
+        if(!strcmp(g_master_lev,"DEBUG"))
+            fprintf(g_master_fp, "\033[37m");
+        else if(!strcmp(g_master_lev,"INFO"))
+            fprintf(g_master_fp, "\033[32m");
+        else if(!strcmp(g_master_lev,"WARNING"))
+            fprintf(g_master_fp, "\033[33m");
+        else if(!strcmp(g_master_lev,"ERROR"))
+            fprintf(g_master_fp, "\033[31m");
+        else if(!strcmp(g_master_lev,"CRITICAL"))
+            fprintf(g_master_fp, "\033[31;45m");
         fprintf(g_master_fp, "[%s] ", g_master_lev);
-	fprintf(g_master_fp, "\033[0m");
+        fprintf(g_master_fp, "\033[0m");
     }
     vfprintf(g_master_fp, fmt, arg_list);
     fprintf(g_master_fp, "\n");
@@ -176,42 +179,40 @@ int easylog_write_log(const char * fmt, va_list arg_list) {
     return 0;
 }
 
-int easylog_write(char level ,const char * fmt, ...) {
+int easylog_write(char level,const char * fmt, ...)
+{
 
-  char cfg_log[8]={0};
-  struct uci_context* ctx = guci2_init();
-  guci2_get(ctx, "rs485.rs485.log", cfg_log);
-  cfg.dbglvl = strToNumber(cfg_log);
-  
-  if (0==cfg.dbglvl) return;
-  if (level < cfg.dbglvl) return;
-  if (level==1){
-    g_master_lev  = "DEBUG";
-  }
-  else if (level==2){
-    g_master_lev  = "INFO";
-  }
-  else if (level==3){
-    g_master_lev  = "WARNING";
-  }
-  else if (level==4){
-    g_master_lev="ERROR";
-  }
-  else if (level==5){
-    g_master_lev="CRITICAL";
-  }
+    char cfg_log[8]= {0};
+    struct uci_context* ctx = guci2_init();
+    guci2_get(ctx, "rs485.rs485.log", cfg_log);
+    cfg.dbglvl = strToNumber(cfg_log);
 
-  va_list argptr;
-  int ret;
+    if (0==cfg.dbglvl) return;
+    if (level < cfg.dbglvl) return;
+    if (level==1) {
+        g_master_lev  = "DEBUG";
+    } else if (level==2) {
+        g_master_lev  = "INFO";
+    } else if (level==3) {
+        g_master_lev  = "WARNING";
+    } else if (level==4) {
+        g_master_lev="ERROR";
+    } else if (level==5) {
+        g_master_lev="CRITICAL";
+    }
 
-  va_start(argptr, fmt);
-  ret = easylog_write_log(fmt, argptr);
-  va_end(argptr);
+    va_list argptr;
+    int ret;
 
-  return ret;
+    va_start(argptr, fmt);
+    ret = easylog_write_log(fmt, argptr);
+    va_end(argptr);
+
+    return ret;
 }
 
-int easylog_flag_add(int flag) {
+int easylog_flag_add(int flag)
+{
     g_master_flag |= flag;
 
     return 0;
@@ -222,5 +223,4 @@ int easylog_flag_add(int flag) {
 
 //   return 0;
 //}
-
 

@@ -1,4 +1,3 @@
-
 #ifndef _CONN_H
 #define _CONN_H
 
@@ -63,3 +62,4 @@ ssize_t tty_write_read(char *buf, size_t nbytes,char type);
 ssize_t tty_write_file(char * file);
 
 #endif /* _CONN_H */
+

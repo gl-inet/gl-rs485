@@ -1,4 +1,3 @@
-
 #ifndef _CFG_H
 #define _CFG_H
 
@@ -56,3 +55,4 @@ extern cfg_t cfg;
 void cfg_init(void);
 unsigned char my_hex_str_to_i_l(char *s,unsigned char len,unsigned char offset);
 #endif /* _CFG_H */
+

@@ -1,4 +1,3 @@
-
 #ifndef _QUEUE_H
 #define _QUEUE_H
 
@@ -23,3 +22,4 @@ void queue_delete_elem(queue_t *queue, conn_t *conn);
 conn_t *queue_next_elem(queue_t *queue, conn_t *conn);
 
 #endif /* _QUEUE_H */
+
