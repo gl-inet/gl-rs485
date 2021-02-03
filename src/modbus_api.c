@@ -20,12 +20,23 @@
 /***
  * @api {get} /rs485/attr/get /rs485/attr/get
  * @apiGroup rs485
- * @apiVersion 1.0.0
+ * @apiVersion 1.0.1
  * @apiDescription get rs485 attributes.
  * @apiHeader {string} Authorization Users unique token.
  * @apiSuccess {integer} code return code.
  * @apiSuccess (Code) {integer} 0 success.
  * @apiSuccess (Code) {integer} -1 Invalid user, permission denied or not logged in!
+ * @apiSuccess {Object[]} rs485_config rs485 port config.
+ * @apiSuccessExample {json} Success-Response:
+ * {
+ *	"code": 0,
+ *	"rs485_config": {
+ *		"device": "\/dev\/ttyS0", 
+ *		"speed": "9600", //0-115200
+ *		"mode": "8n1",   //[5/6/7/8][n/e/o][1/2]  n:none  e:even parity  o:odd parity
+ *		"timeout": "500" //0-65535
+ *	}
+ * }
  */
 int get_rs485_attr(json_object * input, json_object * output)
 {
@@ -56,9 +67,13 @@ int get_rs485_attr(json_object * input, json_object * output)
 /***
  * @api {post} /rs485/attr/set /rs485/attr/set
  * @apiGroup rs485
- * @apiVersion 1.0.0
+ * @apiVersion 1.0.1
  * @apiDescription set rs485 attributes.
  * @apiHeader {string} Authorization Users unique token.
+ * @apiParam {integer} speed  Serial port baud rate :0-115200
+ * @apiParam {integer} timeout overtime time :0-65535(ms)
+ * @apiParam {string}  device Device node name
+ * @apiParam {string}  mode  Data bit,parity,stop bit. [5/6/7/8][n/e/o][1/2]  n:none  e:even parity  o:odd parity
  * @apiSuccess {integer} code return code.
  * @apiSuccess (Code) {integer} 0 success.
  * @apiSuccess (Code) {integer} -1 Invalid user, permission denied or not logged in!
@@ -208,7 +223,7 @@ void gl_str2acsll(char  *str_in, int s_len, uint8_t  *acsll_out)
 /***
  * @api {post} /rs485/ele_meter_vol/get  /rs485/ele_meter_vol/get
  * @apiGroup rs485
- * @apiVersion 1.0.0
+ * @apiVersion 1.0.1
  * @apiDescription get rs485 Electric meter Voltage.
  * @apiHeader {string} Authorization Users unique token.
  * @apiSuccess {integer} code return code.
@@ -216,74 +231,74 @@ void gl_str2acsll(char  *str_in, int s_len, uint8_t  *acsll_out)
  * @apiSuccess (Code) {integer} -1 Invalid user, permission denied or not logged in!
  */
 
+// Unused
+/*int get_rs485_ele_meter_vol(json_object * input, json_object * output)*/
+//{
 
-int get_rs485_ele_meter_vol(json_object * input, json_object * output)
-{
+    //int reg_len = 0;
+    //int fd  = -1;
+    //int ret = 8;
+    //int count = 0;
+    //int time_out = 0;
+    //unsigned int f_data = 0;
+    //unsigned short crc_v = 0;
+    //char *device_id = gjson_get_string(input, "device_id");
+    //unsigned char read_cmd[8] = {0,4,0,0,0,2,0,0};
+    //unsigned char rec_buff[20] = {0};
+    //read_cmd[0] = my_hex_str_to_i(device_id);
 
-    int reg_len = 0;
-    int fd  = -1;
-    int ret = 8;
-    int count = 0;
-    int time_out = 0;
-    unsigned int f_data = 0;
-    unsigned short crc_v = 0;
-    char *device_id = gjson_get_string(input, "device_id");
-    unsigned char read_cmd[8] = {0,4,0,0,0,2,0,0};
-    unsigned char rec_buff[20] = {0};
-    read_cmd[0] = my_hex_str_to_i(device_id);
+    //crc_v=gl_crc16 (read_cmd, 6,0xa001);
+    //read_cmd[6]=crc_v%256;
+    //read_cmd[7]=crc_v/256;
 
-    crc_v=gl_crc16 (read_cmd, 6,0xa001);
-    read_cmd[6]=crc_v%256;
-    read_cmd[7]=crc_v/256;
+    //cfg_init();
 
-    cfg_init();
+    //fd = uartOpen(cfg.ttyport,cfg.ttyspeed,0,cfg.ttytimeout);
+    //if(fd < 0 ) {
+        //return 0;
+    //}
 
-    fd = uartOpen(cfg.ttyport,cfg.ttyspeed,0,cfg.ttytimeout);
-    if(fd < 0 ) {
-        return 0;
-    }
+    //while( flock(fd,LOCK_EX|LOCK_NB) != 0 ) { //get file lock
+        //if( ++time_out > 30 ) { //time out
+            //MyuartClose(fd);
+            //return -2;
+        //}
+        //usleep(1000);
+    //}
+    //MyflushIoBuffer(fd);
+    //MyuartTxNonBlocking(fd,8,read_cmd);
+    //while(ret==8) {
+        //ret = MyuartRxExpires(fd,200,&rec_buff[0+count],cfg.ttytimeout);
+        //count +=ret;
+    //}
+    //MyuartClose(fd);
 
-    while( flock(fd,LOCK_EX|LOCK_NB) != 0 ) { //get file lock
-        if( ++time_out > 30 ) { //time out
-            MyuartClose(fd);
-            return -2;
-        }
-        usleep(1000);
-    }
-    MyflushIoBuffer(fd);
-    MyuartTxNonBlocking(fd,8,read_cmd);
-    while(ret==8) {
-        ret = MyuartRxExpires(fd,200,&rec_buff[0+count],cfg.ttytimeout);
-        count +=ret;
-    }
-    MyuartClose(fd);
+    //reg_len = read_cmd[4]*256 + read_cmd[5];
+    //if((count>5)&&(reg_len>0)) {
+        //f_data = rec_buff[3]*(1<<24)+rec_buff[4]*(1<<16)+rec_buff[5]*256+rec_buff[6];
+        //gjson_add_double(output, "vol",(*(float*)(&f_data)));
 
-    reg_len = read_cmd[4]*256 + read_cmd[5];
-    if((count>5)&&(reg_len>0)) {
-        f_data = rec_buff[3]*(1<<24)+rec_buff[4]*(1<<16)+rec_buff[5]*256+rec_buff[6];
-        gjson_add_double(output, "vol",(*(float*)(&f_data)));
+        //unsigned short crc_way = 0xa001;//modbus
+        //crc_v=gl_crc16 (rec_buff, count-2,crc_way);
+        //if(crc_v==(rec_buff[count-2]+rec_buff[count-1]*256)) {
+            //gjson_add_boolean(output,"crc_ok",1);
 
-        unsigned short crc_way = 0xa001;//modbus
-        crc_v=gl_crc16 (rec_buff, count-2,crc_way);
-        if(crc_v==(rec_buff[count-2]+rec_buff[count-1]*256)) {
-            gjson_add_boolean(output,"crc_ok",1);
+        //} else {
+            //gjson_add_boolean(output,"crc_ok",0);
 
-        } else {
-            gjson_add_boolean(output,"crc_ok",0);
+        //}
 
-        }
-
-    } else {
-        gjson_add_string(output,"error","read fail");
-    }
-    return 0;
-}
+    //} else {
+        //gjson_add_string(output,"error","read fail");
+    //}
+    //return 0;
+/*}*/
 
 
 /***
  * @api {post} /rs485/temp_humi/get  /rs485/temp_humi/get
  * @apiGroup rs485
- * @apiVersion 1.0.0
+ * @apiVersion 1.0.1
  * @apiDescription get rs485  Temperature and humidity.
  * @apiHeader {string} Authorization Users unique token.
  * @apiSuccess {integer} code return code.
@@ -291,76 +306,77 @@ int get_rs485_ele_meter_vol(json_object * input, json_object * output)
  * @apiSuccess (Code) {integer} -1 Invalid user, permission denied or not logged in!
  */
 
-int get_rs485_temp_humi(json_object * input, json_object * output)
-{
+//Unused
+/*int get_rs485_temp_humi(json_object * input, json_object * output)*/
+//{
 
-    int reg_len = 0;
-    int fd  = -1;
-    int ret = 8;
-    int count = 0;
-    int time_out = 0;
-    unsigned short crc_v = 0;
-    char *device_id = gjson_get_string(input, "device_id");
-    unsigned char read_cmd[8] = {0,3,0,0,0,2,0,0};
-    unsigned char rec_buff[20] = {0};
-    read_cmd[0] = my_hex_str_to_i(device_id);
+    //int reg_len = 0;
+    //int fd  = -1;
+    //int ret = 8;
+    //int count = 0;
+    //int time_out = 0;
+    //unsigned short crc_v = 0;
+    //char *device_id = gjson_get_string(input, "device_id");
+    //unsigned char read_cmd[8] = {0,3,0,0,0,2,0,0};
+    //unsigned char rec_buff[20] = {0};
+    //read_cmd[0] = my_hex_str_to_i(device_id);
 
-    crc_v=gl_crc16 (read_cmd, 6,0xa001);
-    read_cmd[6]=crc_v%256;
-    read_cmd[7]=crc_v/256;
+    //crc_v=gl_crc16 (read_cmd, 6,0xa001);
+    //read_cmd[6]=crc_v%256;
+    //read_cmd[7]=crc_v/256;
 
-    cfg_init();
+    //cfg_init();
 
-    fd = uartOpen(cfg.ttyport,cfg.ttyspeed,0,cfg.ttytimeout);
-    if(fd < 0 ) {
-        return 1;
-    }
+    //fd = uartOpen(cfg.ttyport,cfg.ttyspeed,0,cfg.ttytimeout);
+    //if(fd < 0 ) {
+        //return 1;
+    //}
 
-    while( flock(fd,LOCK_EX|LOCK_NB) != 0 ) { //get file lock
-        if( ++time_out > 30 ) { //time out
-            MyuartClose(fd);
-            return -2;
-        }
-        usleep(1000);
-    }
-    MyflushIoBuffer(fd);
-    MyuartTxNonBlocking(fd,8,read_cmd);
-    while(ret==8) {
-        ret = MyuartRxExpires(fd,200,&rec_buff[0+count],cfg.ttytimeout);
-        count +=ret;
-    }
-    MyuartClose(fd);
+    //while( flock(fd,LOCK_EX|LOCK_NB) != 0 ) { //get file lock
+        //if( ++time_out > 30 ) { //time out
+            //MyuartClose(fd);
+            //return -2;
+        //}
+        //usleep(1000);
+    //}
+    //MyflushIoBuffer(fd);
+    //MyuartTxNonBlocking(fd,8,read_cmd);
+    //while(ret==8) {
+        //ret = MyuartRxExpires(fd,200,&rec_buff[0+count],cfg.ttytimeout);
+        //count +=ret;
+    //}
+    //MyuartClose(fd);
 
-    reg_len = read_cmd[4]*256 + read_cmd[5];
-    if((count>5)&&(reg_len>0)) {
-        int t_data = 0;
-        t_data = rec_buff[3]*256+rec_buff[4];
-        if(t_data>0x7fff) {
-            t_data = t_data - 0xffff;
-        }
-        gjson_add_double(output, "tempdata",(t_data/10.0));
-        gjson_add_double(output, "humidata",(rec_buff[5]*256+rec_buff[6])/10.0);
+    //reg_len = read_cmd[4]*256 + read_cmd[5];
+    //if((count>5)&&(reg_len>0)) {
+        //int t_data = 0;
+        //t_data = rec_buff[3]*256+rec_buff[4];
+        //if(t_data>0x7fff) {
+            //t_data = t_data - 0xffff;
+        //}
+        //gjson_add_double(output, "tempdata",(t_data/10.0));
+        //gjson_add_double(output, "humidata",(rec_buff[5]*256+rec_buff[6])/10.0);
 
-        unsigned short crc_way = 0xa001;//modbus
-        crc_v=gl_crc16 (rec_buff, count-2,crc_way);
-        if(crc_v==(rec_buff[count-2]+rec_buff[count-1]*256)) {
-            gjson_add_boolean(output,"crc_ok",1);
+        //unsigned short crc_way = 0xa001;//modbus
+        //crc_v=gl_crc16 (rec_buff, count-2,crc_way);
+        //if(crc_v==(rec_buff[count-2]+rec_buff[count-1]*256)) {
+            //gjson_add_boolean(output,"crc_ok",1);
 
-        } else {
-            gjson_add_boolean(output,"crc_ok",0);
+        //} else {
+            //gjson_add_boolean(output,"crc_ok",0);
 
-        }
+        //}
 
-    } else {
-        gjson_add_string(output,"error","read fail");
-    }
-    return 0;
-}
+    //} else {
+        //gjson_add_string(output,"error","read fail");
+    //}
+    //return 0;
+/*}*/
 
 /***
  * @api {post} /rs485/temp_humi_id/set  /rs485/temp_humi_id/set
  * @apiGroup rs485
- * @apiVersion 1.0.0
+ * @apiVersion 1.0.1
  * @apiDescription set rs485  Temperature and humidity ID.
  * @apiHeader {string} Authorization Users unique token.
  * @apiSuccess {integer} code return code.
@@ -368,86 +384,111 @@ int get_rs485_temp_humi(json_object * input, json_object * output)
  * @apiSuccess (Code) {integer} -1 Invalid user, permission denied or not logged in!
  */
 
-int modify_rs485_temp_humi_id(json_object * input, json_object * output)
-{
-    int reg_len = 0;
-    int fd  = -1;
-    int ret = 8;
-    int count = 0;
-    int time_out = 0;
-    unsigned short crc_v = 0;
+//Unused
+/*int modify_rs485_temp_humi_id(json_object * input, json_object * output)*/
+//{
+    //int reg_len = 0;
+    //int fd  = -1;
+    //int ret = 8;
+    //int count = 0;
+    //int time_out = 0;
+    //unsigned short crc_v = 0;
 
-    unsigned char read_cmd[16] = {0,0x10,0,2,0,1,2,0,0,0,0};
-    unsigned char rec_buff[64] = {0};
-    char *device_id = gjson_get_string(input, "device_id");
-    char *device_id_m = gjson_get_string(input, "device_id_m");
-    read_cmd[0] = my_hex_str_to_i(device_id);
-    read_cmd[1] = 0x10;
-    read_cmd[8] = my_hex_str_to_i(device_id_m);
-    crc_v=gl_crc16 (read_cmd, 9,0xa001);
-    read_cmd[9]=crc_v%256;
-    read_cmd[10]=crc_v/256;
+    //unsigned char read_cmd[16] = {0,0x10,0,2,0,1,2,0,0,0,0};
+    //unsigned char rec_buff[64] = {0};
+    //char *device_id = gjson_get_string(input, "device_id");
+    //char *device_id_m = gjson_get_string(input, "device_id_m");
+    //read_cmd[0] = my_hex_str_to_i(device_id);
+    //read_cmd[1] = 0x10;
+    //read_cmd[8] = my_hex_str_to_i(device_id_m);
+    //crc_v=gl_crc16 (read_cmd, 9,0xa001);
+    //read_cmd[9]=crc_v%256;
+    //read_cmd[10]=crc_v/256;
 
-    cfg_init();
+    //cfg_init();
 
-    fd = uartOpen(cfg.ttyport,cfg.ttyspeed,0,cfg.ttytimeout);
-    if(fd < 0 ) {
-        return 1;
-    }
+    //fd = uartOpen(cfg.ttyport,cfg.ttyspeed,0,cfg.ttytimeout);
+    //if(fd < 0 ) {
+        //return 1;
+    //}
 
-    while( flock(fd,LOCK_EX|LOCK_NB) != 0 ) { //get file lock
-        if( ++time_out > 30 ) { //time out
-            MyuartClose(fd);
-            return -2;
-        }
-        usleep(1000);
-    }
-    MyflushIoBuffer(fd);
-    MyuartTxNonBlocking(fd,11,read_cmd);
-    while(ret==8) {
-        ret = MyuartRxExpires(fd,200,&rec_buff[0+count],cfg.ttytimeout);
-        count +=ret;
-    }
-    MyuartClose(fd);
+    //while( flock(fd,LOCK_EX|LOCK_NB) != 0 ) { //get file lock
+        //if( ++time_out > 30 ) { //time out
+            //MyuartClose(fd);
+            //return -2;
+        //}
+        //usleep(1000);
+    //}
+    //MyflushIoBuffer(fd);
+    //MyuartTxNonBlocking(fd,11,read_cmd);
+    //while(ret==8) {
+        //ret = MyuartRxExpires(fd,200,&rec_buff[0+count],cfg.ttytimeout);
+        //count +=ret;
+    //}
+    //MyuartClose(fd);
 
-    reg_len = read_cmd[4]*256 + read_cmd[5];
-    if((count>1)&&(reg_len>0)) {
-        char alldata[128] = {0};
-        gl_hex2str(rec_buff,count,alldata);
-        gjson_add_string(output,"alldata",alldata);
+    //reg_len = read_cmd[4]*256 + read_cmd[5];
+    //if((count>1)&&(reg_len>0)) {
+        //char alldata[128] = {0};
+        //gl_hex2str(rec_buff,count,alldata);
+        //gjson_add_string(output,"alldata",alldata);
 
-        if(rec_buff[0]==read_cmd[8]) {
-            gjson_add_boolean(output,"modify_ok",1);
+        //if(rec_buff[0]==read_cmd[8]) {
+            //gjson_add_boolean(output,"modify_ok",1);
 
-        } else {
-            gjson_add_boolean(output,"modify_ok",1);
+        //} else {
+            //gjson_add_boolean(output,"modify_ok",1);
 
-        }
+        //}
 
-        unsigned short crc_way = 0xa001;//modbus
-        crc_v=gl_crc16 (rec_buff, count-2,crc_way);
-        if(crc_v==(rec_buff[count-2]+rec_buff[count-1]*256)) {
-            gjson_add_boolean(output,"crc_ok",1);
+        //unsigned short crc_way = 0xa001;//modbus
+        //crc_v=gl_crc16 (rec_buff, count-2,crc_way);
+        //if(crc_v==(rec_buff[count-2]+rec_buff[count-1]*256)) {
+            //gjson_add_boolean(output,"crc_ok",1);
 
-        } else {
-            gjson_add_boolean(output,"crc_ok",0);
+        //} else {
+            //gjson_add_boolean(output,"crc_ok",0);
 
-        }
+        //}
 
-    } else {
-        gjson_add_string(output,"error","read fail");
-    }
-    return 0;
-}
+    //} else {
+        //gjson_add_string(output,"error","read fail");
+    //}
+    //return 0;
+/*}*/
+
 /***
  * @api {post} /rs485/data/read /rs485/data/read
  * @apiGroup rs485
- * @apiVersion 1.0.0
+ * @apiVersion 1.0.1
  * @apiDescription read rs485 data.
  * @apiHeader {string} Authorization Users unique token.
+ * @apiParam {integer} device_id  rs485 device id:1-247
+ * @apiParam {integer} func_code  func code
+ * @apiParam {integer} reg_addr_h RS485 terminal device register address high 8 bits
+ * @apiParam {integer} reg_addr_l RS485 terminal device register address low 8 bits
+ * @apiParam {integer} reg_len Number of registers,16 bits for one
  * @apiSuccess {integer} code return code.
  * @apiSuccess (Code) {integer} 0 success.
+ * @apiSuccess (Code) {integer} 1  open device error.
+ * @apiSuccess (Code) {integer} -2 device busy.
  * @apiSuccess (Code) {integer} -1 Invalid user, permission denied or not logged in!
+ * @apiSuccess {Object[]} rs485_data rs485 terminal data.
+ * @apiSuccessExample {json} Success-Response:
+ * {
+ *	"code": 0,
+ *	"rs485_data": {
+ *		"alldata": "01 03 04 00 fb 02 2b ca bd ", //Raw data returned by RS485 terminal equipment
+ *		"crc_ok": true                            //crc verification result
+ *	}
+ *}
+ * @apiSuccessExample {json} failure-Response:
+ * {
+ *	"code": 0,
+ *	"rs485_data": {
+ *		"error": "read fail"
+ *	}
+ *}
  */
 int read_rs485_data(json_object * input, json_object * output)
 {
@@ -535,12 +576,37 @@ int read_rs485_data(json_object * input, json_object * output)
 /***
  * @api {post} /rs485/data/write /rs485/data/write
  * @apiGroup rs485
- * @apiVersion 1.0.0
+ * @apiVersion 1.0.1
  * @apiDescription write rs485 data.
  * @apiHeader {string} Authorization Users unique token.
+ * @apiParam {integer} device_id  rs485 device id:1-247
+ * @apiParam {integer} func_code  func code
+ * @apiParam {integer} reg_addr_h RS485 terminal device register address high 8 bits
+ * @apiParam {integer} reg_addr_l RS485 terminal device register address low 8 bits
+ * @apiParam {integer} reg_len Number of registers,16 bits for one
+ * @apiParam {integer} data_count Number of data,8 bits for one
+ * @apiParam {string}  data Data in hexadecimal format
  * @apiSuccess {integer} code return code.
  * @apiSuccess (Code) {integer} 0 success.
+ * @apiSuccess (Code) {integer} 1  open device error.
+ * @apiSuccess (Code) {integer} -2 device busy.
  * @apiSuccess (Code) {integer} -1 Invalid user, permission denied or not logged in!
+ * @apiSuccess {Object[]} rs485_data rs485 terminal data.
+ * @apiSuccessExample {json} Success-Response:
+ * {
+ *	"code": 0,
+ *	"rs485_data": {
+ *		"alldata": "01 03 04 00 fb 02 2b ca bd ", //Raw data returned by RS485 terminal equipment
+ *		"crc_ok": true                            //crc verification result
+ *	}
+ *}
+ * @apiSuccessExample {json} failure-Response:
+ * {
+ *	"code": 0,
+ *	"rs485_data": {
+ *		"error": "write fail"
+ *	}
+ *}
  */
 int write_rs485_data(json_object * input, json_object * output)
 {
@@ -641,233 +707,252 @@ int write_rs485_data(json_object * input, json_object * output)
 /***
  * @api {get} /rs485/dlt645/contact_get /rs485/dlt645/contact_get
  * @apiGroup rs485
- * @apiVersion 1.0.0
+ * @apiVersion 1.0.1
  * @apiDescription read  dlt645 contact addr.
  * @apiHeader {string} Authorization Users unique token.
  * @apiSuccess {integer} code return code.
  * @apiSuccess (Code) {integer} 0 success.
  * @apiSuccess (Code) {integer} -1 Invalid user, permission denied or not logged in!
  */
-int get_dlt645_contact_addr(json_object * input, json_object * output)
-{
-    int fd  = -1;
-    int ret = 8;
-    int count = 0;
-    int time_out = 0;
 
-    unsigned char read_cmd[12] = {0x68,0xAA,0xAA,0xAA,0xAA,0xAA,0xAA,0x68,0x13,0x00,0xDF,0x16};
-    unsigned char rec_buff[64] = {0};
-    cfg_init();
+ //Unused
+/*int get_dlt645_contact_addr(json_object * input, json_object * output)*/
+//{
+    //int fd  = -1;
+    //int ret = 8;
+    //int count = 0;
+    //int time_out = 0;
 
-    fd = uartOpen(cfg.ttyport,cfg.ttyspeed,0,cfg.ttytimeout);
-    if(fd < 0 ) {
-        return 1;
-    }
+    //unsigned char read_cmd[12] = {0x68,0xAA,0xAA,0xAA,0xAA,0xAA,0xAA,0x68,0x13,0x00,0xDF,0x16};
+    //unsigned char rec_buff[64] = {0};
+    //cfg_init();
 
-    while( flock(fd,LOCK_EX|LOCK_NB) != 0 ) { //get file lock
-        if( ++time_out > 30 ) { //time out
-            MyuartClose(fd);
-            return -2;
-        }
-        usleep(1000);
-    }
-    MyflushIoBuffer(fd);
-    MyuartTxNonBlocking(fd,12,read_cmd);
-    while(ret==8) {
-        ret = MyuartRxExpires(fd,200,&rec_buff[0+count],cfg.ttytimeout);
-        count +=ret;
-    }
-    MyuartClose(fd);
+    //fd = uartOpen(cfg.ttyport,cfg.ttyspeed,0,cfg.ttytimeout);
+    //if(fd < 0 ) {
+        //return 1;
+    //}
 
-    json_object *rs485_data = json_object_new_object();
+    //while( flock(fd,LOCK_EX|LOCK_NB) != 0 ) { //get file lock
+        //if( ++time_out > 30 ) { //time out
+            //MyuartClose(fd);
+            //return -2;
+        //}
+        //usleep(1000);
+    //}
+    //MyflushIoBuffer(fd);
+    //MyuartTxNonBlocking(fd,12,read_cmd);
+    //while(ret==8) {
+        //ret = MyuartRxExpires(fd,200,&rec_buff[0+count],cfg.ttytimeout);
+        //count +=ret;
+    //}
+    //MyuartClose(fd);
 
-    if(count>1) {
-        char alldata[10] = {0};
-        char addr_data[20] = {0};
-        char alldata1[128] = {0};
-        gl_hex2str(rec_buff,count,alldata1);
-        char i = 0;
-        for(i=1; i<7; i++) {
-            sprintf(alldata,"%02x",rec_buff[i]);
-            strcat(addr_data,alldata);
-        }
-        gjson_add_string(rs485_data,"alldata",alldata1);
-        gjson_add_string(rs485_data,"addr_data",addr_data);
+    //json_object *rs485_data = json_object_new_object();
 
-        unsigned char data_cs = 0;
-        for(i=0; i<count-2; i++) {
-            data_cs += rec_buff[i];
-        }
+    //if(count>1) {
+        //char alldata[10] = {0};
+        //char addr_data[20] = {0};
+        //char alldata1[128] = {0};
+        //gl_hex2str(rec_buff,count,alldata1);
+        //char i = 0;
+        //for(i=1; i<7; i++) {
+            //sprintf(alldata,"%02x",rec_buff[i]);
+            //strcat(addr_data,alldata);
+        //}
+        //gjson_add_string(rs485_data,"alldata",alldata1);
+        //gjson_add_string(rs485_data,"addr_data",addr_data);
+
+        //unsigned char data_cs = 0;
+        //for(i=0; i<count-2; i++) {
+            //data_cs += rec_buff[i];
+        //}
 
 
-        if(data_cs==(rec_buff[count-2])) {
-            gjson_add_boolean(rs485_data,"cs_ok",1);
-        } else {
-            gjson_add_boolean(rs485_data,"cs_ok",0);
+        //if(data_cs==(rec_buff[count-2])) {
+            //gjson_add_boolean(rs485_data,"cs_ok",1);
+        //} else {
+            //gjson_add_boolean(rs485_data,"cs_ok",0);
 
-        }
+        //}
 
-    } else {
-        gjson_add_string(rs485_data,"error","read fail");
-    }
-    gjson_add_object(output, "rs485_data",rs485_data);
+    //} else {
+        //gjson_add_string(rs485_data,"error","read fail");
+    //}
+    //gjson_add_object(output, "rs485_data",rs485_data);
 
-    return 0;
+    //return 0;
 
-}
+/*}*/
 
 /***
  * @api {post} /rs485/dlt645/data_read /rs485/dlt645/data_read
  * @apiGroup rs485
- * @apiVersion 1.0.0
+ * @apiVersion 1.0.1
  * @apiDescription read  dlt645 data.
  * @apiHeader {string} Authorization Users unique token.
  * @apiSuccess {integer} code return code.
  * @apiSuccess (Code) {integer} 0 success.
  * @apiSuccess (Code) {integer} -1 Invalid user, permission denied or not logged in!
  */
-int read_dlt645_data(json_object * input, json_object * output)
-{
-    int i = 0;
-    int fd  = -1;
-    int ret = 8;
-    int count = 0;
-    int time_out = 0;
-    int datalen = 0;
 
-    unsigned char read_cmd[20] = {0x68,0xAA,0xAA,0xAA,0xAA,0xAA,0xAA,0x68,0};
-    unsigned char rec_buff[512] = {0};
+ //Unused
+/*int read_dlt645_data(json_object * input, json_object * output)*/
+//{
+    //int i = 0;
+    //int fd  = -1;
+    //int ret = 8;
+    //int count = 0;
+    //int time_out = 0;
+    //int datalen = 0;
 
-    char *con_addr = gjson_get_string(input, "con_addr");
-    char *ctl_code = gjson_get_string(input, "ctl_code");
-    char *data_len = gjson_get_string(input, "data_len");
+    //unsigned char read_cmd[20] = {0x68,0xAA,0xAA,0xAA,0xAA,0xAA,0xAA,0x68,0};
+    //unsigned char rec_buff[512] = {0};
 
-
-    for(i=0; i<6; i++) {
-        read_cmd[1+i] = my_hex_str_to_i_l(con_addr,2,2*i);
-    }
-    read_cmd[8] = my_hex_str_to_i(ctl_code);
-    datalen = read_cmd[9] = my_hex_str_to_i(data_len);
-
-    if(datalen > 0) {
-        char *data_iden = gjson_get_string(input, "data_iden");
-        for(i=0; i<4; i++) {
-            read_cmd[10+i] = my_hex_str_to_i_l(data_iden,2,2*i);
-        }
-    }
-
-    if(datalen > 4) {
-        char *data = gjson_get_string(input, "data");
-        for(i=0; i<datalen-4; i++) {
-            read_cmd[14+i] = my_hex_str_to_i_l(data,2,2*i);
-        }
-    }
-
-    for(i=0; i<datalen + 10; i++) {
-        read_cmd[10+datalen] += read_cmd[i];
-    }
-
-    read_cmd[11+datalen]  = 0x16;
-
-    cfg_init();
-
-    fd = uartOpen(cfg.ttyport,cfg.ttyspeed,0,cfg.ttytimeout);
-    if(fd < 0 ) {
-        return 1;
-    }
-
-    while( flock(fd,LOCK_EX|LOCK_NB) != 0 ) { //get file lock
-        if( ++time_out > 30 ) { //time out
-            MyuartClose(fd);
-            return -2;
-        }
-        usleep(1000);
-    }
-    MyflushIoBuffer(fd);
-    MyuartTxNonBlocking(fd,12+datalen,read_cmd);
-    while(ret==8) {
-        ret = MyuartRxExpires(fd,200,&rec_buff[0+count],cfg.ttytimeout);
-        count +=ret;
-    }
-    MyuartClose(fd);
-
-    json_object *rs485_data = json_object_new_object();
-
-    if(count>1) {
-        char rec_ctl_code[4] = {0};
-        char rec_data_len[4] = {0};
-        char alldata[10] = {0};
-        char addr_data[20] = {0};
-        char alldata1[1024] = {0};
-
-        gl_hex2str(rec_buff,count,alldata1);
-
-        for(i=1; i<7; i++) {
-            memset(alldata,0,10);
-            sprintf(alldata,"%02x",rec_buff[i]);
-            strcat(addr_data,alldata);
-        }
-
-        sprintf(rec_ctl_code,"%02x",rec_buff[8]);
-        sprintf(rec_data_len,"%02x",rec_buff[9]);
+    //char *con_addr = gjson_get_string(input, "con_addr");
+    //char *ctl_code = gjson_get_string(input, "ctl_code");
+    //char *data_len = gjson_get_string(input, "data_len");
 
 
-        gjson_add_string(rs485_data,"alldata",alldata1);
-        gjson_add_string(rs485_data,"con_addr",addr_data);
-        gjson_add_string(rs485_data,"ctl_code",rec_ctl_code);
-        gjson_add_string(rs485_data,"data_len",rec_data_len);
+    //for(i=0; i<6; i++) {
+        //read_cmd[1+i] = my_hex_str_to_i_l(con_addr,2,2*i);
+    //}
+    //read_cmd[8] = my_hex_str_to_i(ctl_code);
+    //datalen = read_cmd[9] = my_hex_str_to_i(data_len);
 
-        unsigned char data_cs = 0;
-        for(i=0; i<count-2; i++) {
-            data_cs += rec_buff[i];
-        }
+    //if(datalen > 0) {
+        //char *data_iden = gjson_get_string(input, "data_iden");
+        //for(i=0; i<4; i++) {
+            //read_cmd[10+i] = my_hex_str_to_i_l(data_iden,2,2*i);
+        //}
+    //}
 
-        datalen = rec_buff[9];
-        if(datalen > 0) {
-            char rec_data_iden[10] = {0};
-            for(i=0; i<4; i++) {
-                rec_buff[13-i] -=0x33;
-                sprintf(alldata,"%02x",rec_buff[13-i]);
-                strcat(rec_data_iden,alldata);
-            }
-            gjson_add_string(rs485_data,"data_iden",rec_data_iden);
-        }
+    //if(datalen > 4) {
+        //char *data = gjson_get_string(input, "data");
+        //for(i=0; i<datalen-4; i++) {
+            //read_cmd[14+i] = my_hex_str_to_i_l(data,2,2*i);
+        //}
+    //}
 
-        if(datalen > 4) {
-            char rec_data[40] = {0};
-            for(i=0; i<datalen-4; i++) {
-                rec_buff[datalen+9-i] -=0x33;
-                sprintf(alldata,"%02x",rec_buff[datalen+9-i]);
-                strcat(rec_data,alldata);
-            }
-            gjson_add_string(rs485_data,"data",rec_data);
-        }
+    //for(i=0; i<datalen + 10; i++) {
+        //read_cmd[10+datalen] += read_cmd[i];
+    //}
 
-        if(data_cs==(rec_buff[count-2])) {
-            gjson_add_boolean(rs485_data,"cs_ok",1);
-        } else {
-            gjson_add_boolean(rs485_data,"cs_ok",0);
+    //read_cmd[11+datalen]  = 0x16;
 
-        }
+    //cfg_init();
 
-    } else {
-        gjson_add_string(rs485_data,"error","read fail");
-    }
-    gjson_add_object(output, "rs485_data",rs485_data);
+    //fd = uartOpen(cfg.ttyport,cfg.ttyspeed,0,cfg.ttytimeout);
+    //if(fd < 0 ) {
+        //return 1;
+    //}
 
-    return 0;
+    //while( flock(fd,LOCK_EX|LOCK_NB) != 0 ) { //get file lock
+        //if( ++time_out > 30 ) { //time out
+            //MyuartClose(fd);
+            //return -2;
+        //}
+        //usleep(1000);
+    //}
+    //MyflushIoBuffer(fd);
+    //MyuartTxNonBlocking(fd,12+datalen,read_cmd);
+    //while(ret==8) {
+        //ret = MyuartRxExpires(fd,200,&rec_buff[0+count],cfg.ttytimeout);
+        //count +=ret;
+    //}
+    //MyuartClose(fd);
 
-}
+    //json_object *rs485_data = json_object_new_object();
+
+    //if(count>1) {
+        //char rec_ctl_code[4] = {0};
+        //char rec_data_len[4] = {0};
+        //char alldata[10] = {0};
+        //char addr_data[20] = {0};
+        //char alldata1[1024] = {0};
+
+        //gl_hex2str(rec_buff,count,alldata1);
+
+        //for(i=1; i<7; i++) {
+            //memset(alldata,0,10);
+            //sprintf(alldata,"%02x",rec_buff[i]);
+            //strcat(addr_data,alldata);
+        //}
+
+        //sprintf(rec_ctl_code,"%02x",rec_buff[8]);
+        //sprintf(rec_data_len,"%02x",rec_buff[9]);
+
+
+        //gjson_add_string(rs485_data,"alldata",alldata1);
+        //gjson_add_string(rs485_data,"con_addr",addr_data);
+        //gjson_add_string(rs485_data,"ctl_code",rec_ctl_code);
+        //gjson_add_string(rs485_data,"data_len",rec_data_len);
+
+        //unsigned char data_cs = 0;
+        //for(i=0; i<count-2; i++) {
+            //data_cs += rec_buff[i];
+        //}
+
+        //datalen = rec_buff[9];
+        //if(datalen > 0) {
+            //char rec_data_iden[10] = {0};
+            //for(i=0; i<4; i++) {
+                //rec_buff[13-i] -=0x33;
+                //sprintf(alldata,"%02x",rec_buff[13-i]);
+                //strcat(rec_data_iden,alldata);
+            //}
+            //gjson_add_string(rs485_data,"data_iden",rec_data_iden);
+        //}
+
+        //if(datalen > 4) {
+            //char rec_data[40] = {0};
+            //for(i=0; i<datalen-4; i++) {
+                //rec_buff[datalen+9-i] -=0x33;
+                //sprintf(alldata,"%02x",rec_buff[datalen+9-i]);
+                //strcat(rec_data,alldata);
+            //}
+            //gjson_add_string(rs485_data,"data",rec_data);
+        //}
+
+        //if(data_cs==(rec_buff[count-2])) {
+            //gjson_add_boolean(rs485_data,"cs_ok",1);
+        //} else {
+            //gjson_add_boolean(rs485_data,"cs_ok",0);
+
+        //}
+
+    //} else {
+        //gjson_add_string(rs485_data,"error","read fail");
+    //}
+    //gjson_add_object(output, "rs485_data",rs485_data);
+
+    //return 0;
+
+/*}*/
 
 /***
  * @api {post} /rs485/terminal/send_read /rs485/terminal/send_read
  * @apiGroup rs485
- * @apiVersion 1.0.0
+ * @apiVersion 1.0.1
  * @apiDescription  termiinal send read .
+ * @apiParam {String} show_type type of data:[str/hex]
+ * @apiParam {integer} show_send  Whether to display the sent content [1/0]
+ * @apiParam {integer} show_date  Whether to display the sending date [1/0]
+ * @apiParam {String} data        Data to be sent
  * @apiHeader {string} Authorization Users unique token.
  * @apiSuccess {integer} code return code.
  * @apiSuccess (Code) {integer} 0 success.
+ * @apiSuccess (Code) {integer} 1 date len err.
  * @apiSuccess (Code) {integer} -1 Invalid user, permission denied or not logged in!
+ * @apiSuccess {Object[]} rs485_data rs485 terminal data.
+ * @apiSuccessExample {json} Success-Response:
+ * {
+ *	"code": 0,
+ *	"rs485_data": {
+ *		"send": "124567",   
+ *		"alldata": "010404436B580E25D8",  //Raw data returned by RS485 terminal equipment
+ *		"date": "2020-09-21 11:19:20\n"
+ *	}
+ *}
  */
 int terminal_send_read(json_object * input, json_object * output)
 {
@@ -937,12 +1022,32 @@ int terminal_send_read(json_object * input, json_object * output)
 /***
  * @api {get} /rs485/mqtt/get  /rs485/mqtt/get
  * @apiGroup rs485
- * @apiVersion 1.0.0
+ * @apiVersion 1.0.1
  * @apiDescription get rs485-mrtt config.
  * @apiHeader {string} Authorization Users unique token.
  * @apiSuccess {integer} code return code.
  * @apiSuccess (Code) {integer} 0 success.
  * @apiSuccess (Code) {integer} -1 Invalid user, permission denied or not logged in!
+ * @apiSuccess {Object[]} rs485_mqtt_config mqtt config.
+ * @apiSuccessExample {json} Success-Response:
+ * {
+ *	"code": 0,
+ *	"rs485_mqtt_config": {
+ *		"port": "1883",
+ *		"address": "broker.emqx.io",
+ *		"timeout": "3000",
+ *		"interval": "60",
+ *		"username": "",
+ *		"password": "",
+ *		"qos": "0",
+ *		"clientid": "glinetx300b",
+ *		"publish": "glinet\/rs485\/data", //Publish topic
+ *		"subscribe": "glinet\/rs485\/cmd",//Subscribe to topics
+ *		"autoconn": "0",
+ *		"autoconninteval": "0",
+ *		"autoconnmaxtime": "0"
+ *	}
+ *}
  */
 int get_mqtt_config(json_object * input, json_object * output)
 {
@@ -1004,9 +1109,22 @@ int get_mqtt_config(json_object * input, json_object * output)
 /***
  * @api {post} /rs485/mqtt/set  /rs485/mqtt/set
  * @apiGroup rs485
- * @apiVersion 1.0.0
+ * @apiVersion 1.0.1
  * @apiDescription set rs485_mqtt config.
  * @apiHeader {string} Authorization Users unique token.
+ * @apiParam {String}  address          mqtt server address
+ * @apiParam {String}  username         mqtt username
+ * @apiParam {String}  password         mqtt password
+ * @apiParam {String}  clientid         mqtt clientid
+ * @apiParam {String}  publish          publish topics
+ * @apiParam {String}  subscribe        Subscribe to topics
+ * @apiParam {integer} port             mqtt server port
+ * @apiParam {integer} timeout          connection timeout_0-65535(ms)
+ * @apiParam {integer} interval         mqtt heartbeat package inteval 0-65535(s)
+ * @apiParam {integer} qos              mqtt qos [0/1/2]
+ * @apiParam {integer} autoconn         auto connection enable  [1/0]
+ * @apiParam {integer} autoconnmaxtime  auto connection max time 0-65535
+ * @apiParam {integer} autoconninteval  auto connection inteval  0-65535(s)
  * @apiSuccess {integer} code return code.
  * @apiSuccess (Code) {integer} 0 success.
  * @apiSuccess (Code) {integer} -1 Invalid user, permission denied or not logged in!
@@ -1056,12 +1174,23 @@ int set_mqtt_config(json_object * input, json_object * output)
 /***
  * @api {get}  /rs485/socket/get /rs485/socket/get
  * @apiGroup rs485
- * @apiVersion 1.0.0
+ * @apiVersion 1.0.1
  * @apiDescription get rs485_socket config.
  * @apiHeader {string} Authorization Users unique token.
  * @apiSuccess {integer} code return code.
  * @apiSuccess (Code) {integer} 0 success.
  * @apiSuccess (Code) {integer} -1 Invalid user, permission denied or not logged in!
+ * @apiSuccess {Object[]} rs485_socket_config socket config.
+ * @apiSuccessExample {json} Success-Response:
+ * {
+ *	"code": 0,
+ *	"rs485_socket_config": {
+ *		"address": "192.168.8.1",
+ *		"port": "502",
+ *		"mode": "tcps",   //[tcps/tcpc/udp] as server or client
+ *		"timeout": "60"   //No communication within this time will disconnect :0-86400(s)
+ *	}
+ * }
  */
 int get_socket_config(json_object * input, json_object * output)
 {
@@ -1093,9 +1222,13 @@ int get_socket_config(json_object * input, json_object * output)
 /***
  * @api {post}   /rs485/socket/set  /rs485/socket/set
  * @apiGroup rs485
- * @apiVersion 1.0.0
+ * @apiVersion 1.0.1
  * @apiDescription set rs485_cocket config.
  * @apiHeader {string} Authorization Users unique token.
+ * @apiParam {String}  address  server IP  address
+ * @apiParam {integer} port     socket port
+ * @apiParam {String}  mode     [tcps/tcpc/udp] as server or client
+ * @apiParam {integer} timeout  No communication within this time will disconnect :0-86400(s)
  * @apiSuccess {integer} code return code.
  * @apiSuccess (Code) {integer} 0 success.
  * @apiSuccess (Code) {integer} -1 Invalid user, permission denied or not logged in!
@@ -1126,7 +1259,7 @@ int set_socket_config(json_object * input, json_object * output)
 /***
  * @api {get}  /rs485/socket/start /rs485/socket/start
  * @apiGroup rs485
- * @apiVersion 1.0.0
+ * @apiVersion 1.0.1
  * @apiDescription start rs485 to socket.
  * @apiHeader {string} Authorization Users unique token.
  * @apiSuccess {integer} code return code.
@@ -1159,7 +1292,7 @@ int rs485_socket_start(json_object * input, json_object * output)
 /***
  * @api {get}  /rs485/socket/stop /rs485/socket/stop
  * @apiGroup rs485
- * @apiVersion 1.0.0
+ * @apiVersion 1.0.1
  * @apiDescription stop rs485 to socket.
  * @apiHeader {string} Authorization Users unique token.
  * @apiSuccess {integer} code return code.
@@ -1191,12 +1324,13 @@ int rs485_socket_stop(json_object * input, json_object * output)
 /***
  * @api {get}  /rs485/socket/status /rs485/socket/status
  * @apiGroup rs485
- * @apiVersion 1.0.0
+ * @apiVersion 1.0.1
  * @apiDescription get rs485 to socket status.
  * @apiHeader {string} Authorization Users unique token.
  * @apiSuccess {integer} code return code.
  * @apiSuccess (Code) {integer} 0 success.
  * @apiSuccess (Code) {integer} -1 Invalid user, permission denied or not logged in!
+ * @apiSuccess {string} rs485_socket_status return rs485 socket connection status.
  */
 int get_rs485_socket_status(json_object * input, json_object * output)
 {
@@ -1218,7 +1352,7 @@ int get_rs485_socket_status(json_object * input, json_object * output)
 /***
  * @api {get}  /rs485/mqtt/start /rs485/mqtt/start
  * @apiGroup rs485
- * @apiVersion 1.0.0
+ * @apiVersion 1.0.1
  * @apiDescription start rs485 to mqtt.
  * @apiHeader {string} Authorization Users unique token.
  * @apiSuccess {integer} code return code.
@@ -1248,7 +1382,7 @@ int rs485_mqtt_start(json_object * input, json_object * output)
 /***
  * @api {get}  /rs485/mqtt/stop /rs485/mqtt/stop
  * @apiGroup rs485
- * @apiVersion 1.0.0
+ * @apiVersion 1.0.1
  * @apiDescription stop rs485 to mqtt.
  * @apiHeader {string} Authorization Users unique token.
  * @apiSuccess {integer} code return code.
@@ -1280,12 +1414,13 @@ int rs485_mqtt_stop(json_object * input, json_object * output)
 /***
  * @api {get}  /rs485/mqtt/status /rs485/mqtt/status
  * @apiGroup rs485
- * @apiVersion 1.0.0
+ * @apiVersion 1.0.1
  * @apiDescription get rs485 to mqtt status.
  * @apiHeader {string} Authorization Users unique token.
  * @apiSuccess {integer} code return code.
  * @apiSuccess (Code) {integer} 0 success.
  * @apiSuccess (Code) {integer} -1 Invalid user, permission denied or not logged in!
+ * @apiSuccess {string} rs485_mqtt_status return rs485 mqtt connection status.
  */
 int get_rs485_mqtt_status(json_object * input, json_object * output)
 {
@@ -1305,12 +1440,18 @@ int get_rs485_mqtt_status(json_object * input, json_object * output)
 /***
  * @api {post}   /rs485/to/mqtt /rs485/to/mqtt
  * @apiGroup rs485
- * @apiVersion 1.0.0
+ * @apiVersion 1.0.1
  * @apiDescription get rs485 data to gl mqtt.
  * @apiHeader {string} Authorization Users unique token.
+ * @apiParam {String}  cmd rs485 cmd 
  * @apiSuccess {integer} code return code.
  * @apiSuccess (Code) {integer} 0 success.
- * @apiSuccess (Code) {integer} -1 Invalid user, permission denied or not logged in!
+ * @apiSuccess (Code) {integer} -1 data format error. 
+ * @apiSuccess (Code) {integer} -2 open device error.
+ * @apiSuccess (Code) {integer} -3 read error.
+ * @apiSuccess {string} api api name.
+ * @apiSuccess {string} error error information.
+ * @apiSuccess {string} data Raw data returned by rs485 terminal.
  */
 
 int get_rs485_data_to_gl_mqtt(json_object * input, json_object * output)
@@ -1375,11 +1516,11 @@ static api_info_t gl_lstCgiApiFuctionInfo[] = {
     map("/rs485/attr/set", "post", set_rs485_attr),
     map("/rs485/data/read", "post", read_rs485_data),
     map("/rs485/data/write", "post", write_rs485_data),
-    map("/rs485/temp_humi/get", "post", get_rs485_temp_humi),
-    map("/rs485/temp_humi_id/set", "post", modify_rs485_temp_humi_id),
-    map("/rs485/ele_meter_vol/get", "post", get_rs485_ele_meter_vol),
-    map("/rs485/dlt645/contact_get", "get", get_dlt645_contact_addr),
-    map("/rs485/dlt645/data_read", "post", read_dlt645_data),
+    //map("/rs485/temp_humi/get", "post", get_rs485_temp_humi),   //Unused
+    //map("/rs485/temp_humi_id/set", "post", modify_rs485_temp_humi_id),
+    //map("/rs485/ele_meter_vol/get", "post", get_rs485_ele_meter_vol),
+    //map("/rs485/dlt645/contact_get", "get", get_dlt645_contact_addr),
+    //map("/rs485/dlt645/data_read", "post", read_dlt645_data),
     map("/rs485/terminal/send_read", "post", terminal_send_read),
     map("/rs485/socket/get", "get", get_socket_config),
     map("/rs485/socket/set", "post", set_socket_config),

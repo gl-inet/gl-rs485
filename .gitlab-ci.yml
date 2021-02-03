@@ -4,11 +4,25 @@
 image: gcc
 
 stages:
+  - doc
   - quality
   - build
 
 include:
   - template: Code-Quality.gitlab-ci.yml
+
+make_doc:
+  stage: doc
+  tags:
+    - gl_router_runner
+  only:
+    refs:
+      - master
+    variables:
+      - $CI_COMMIT_MESSAGE =~ /update-doc/
+  script:
+    - SOURCE_CODE=$(pwd)
+    - cd /home/luo/runner-script;./router_doc_ci "$SOURCE_CODE" "$GITLAB_USER_NAME"
 
 code_quality:
   stage: quality

@@ -1,0 +1,252 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+BACKLOG	src/sock.h	7;"	d
+BUFSIZE	src/conn.h	28;"	d
+Build	Makefile	/^define Build\/Prepare$/;"	m
+CONN_HEADER	src/conn.h	33;"	d
+CONN_RESP	src/conn.h	38;"	d
+CONN_RQST_FUNC	src/conn.h	34;"	d
+CONN_RQST_NVAL	src/conn.h	35;"	d
+CONN_RQST_TAIL	src/conn.h	36;"	d
+CONN_TTY	src/conn.h	37;"	d
+DEFAULT_BITS_PER_CHAR	src/tty.h	31;"	d
+DEFAULT_BSPEED	src/tty.h	27;"	d
+DEFAULT_CONNTIMEOUT	src/conn.h	15;"	d
+DEFAULT_MAXCONN	src/conn.h	14;"	d
+DEFAULT_MODE	src/tty.h	29;"	d
+DEFAULT_PORT	src/tty.h	19;"	d
+DEFAULT_PORT	src/tty.h	21;"	d
+DEFAULT_PORT	src/tty.h	23;"	d
+DEFAULT_SERVERADDR	src/conn.h	12;"	d
+DEFAULT_SERVERPORT	src/conn.h	13;"	d
+DEFAULT_SPEED	src/tty.h	26;"	d
+DV	src/tty.h	13;"	d
+EASYLOG_DATE	src/log.h	20;"	d
+EASYLOG_FILE	src/log.h	22;"	d
+EASYLOG_FUNC	src/log.h	24;"	d
+EASYLOG_LEVEL	src/log.h	25;"	d
+EASYLOG_LINE	src/log.h	23;"	d
+EASYLOG_TIME	src/log.h	21;"	d
+FALSE	src/globals.h	45;"	d
+FD_MSET	src/conn.c	20;"	d	file:
+INTBUFSIZE	src/globals.h	59;"	d
+LDFLAGS	src/Makefile	/^LDFLAGS = -ljson-c -lglutil$/;"	m
+LOGNAME	src/log.h	11;"	d
+LOGPATH	src/log.h	10;"	d
+LOG_FILE_MAX_SIZE	src/log.h	26;"	d
+MAX	src/globals.h	39;"	d
+MAX_CONNTIMEOUT	src/conn.h	24;"	d
+MAX_MAXCONN	src/conn.h	19;"	d
+MIN	src/globals.h	40;"	d
+MyflushIoBuffer	src/uart_posix.c	/^void MyflushIoBuffer(int32_t serialHandle)$/;"	f
+MyuartClose	src/uart_posix.c	/^int32_t MyuartClose(int32_t serialHandle)$/;"	f
+MyuartRx	src/uart_posix.c	/^int32_t MyuartRx(int32_t serialHandle, uint32_t dataLength, uint8_t* data)$/;"	f
+MyuartRxExpires	src/uart_posix.c	/^int32_t MyuartRxExpires(int32_t serialHandle,uint32_t dataLength, uint8_t* data, int32_t timeout)$/;"	f
+MyuartRxNonBlocking	src/uart_posix.c	/^int32_t MyuartRxNonBlocking(int32_t serialHandle,uint32_t dataLength, uint8_t* data)$/;"	f
+MyuartTx	src/uart_posix.c	/^int32_t MyuartTx(int32_t serialHandle,uint32_t dataLength, uint8_t* data)$/;"	f
+MyuartTxNonBlocking	src/uart_posix.c	/^int32_t MyuartTxNonBlocking(int32_t serialHandle, uint32_t dataLength, uint8_t* data)$/;"	f
+PACKAGE	src/globals.h	5;"	d
+PKG_NAME	Makefile	/^PKG_NAME:=gl-rs485$/;"	m
+PKG_RELEASE	Makefile	/^PKG_RELEASE:=1$/;"	m
+PKG_VERSION	Makefile	/^PKG_VERSION:=1.2.2$/;"	m
+Package	Makefile	/^define Package\/gl-rs485\/Default$/;"	m
+Package	Makefile	/^define Package\/gl-rs485\/description$/;"	m
+Package	Makefile	/^define Package\/gl-rs485\/install	$/;"	m
+RC_ACLOSE	src/globals.h	56;"	d
+RC_AOPEN	src/globals.h	55;"	d
+RC_BREAK	src/globals.h	53;"	d
+RC_ERR	src/globals.h	52;"	d
+RC_OK	src/globals.h	51;"	d
+RC_TIMEOUT	src/globals.h	54;"	d
+SOCKBUFSIZE	src/sock.h	10;"	d
+TRUE	src/globals.h	46;"	d
+TRX_ADDC	src/tty.h	42;"	d
+TRX_RTS	src/tty.h	43;"	d
+TRX_SYSFS_0	src/tty.h	45;"	d
+TRX_SYSFS_1	src/tty.h	44;"	d
+TTY_BUFSIZE	src/tty.h	36;"	d
+TTY_PAUSE	src/tty.h	51;"	d
+TTY_PROC	src/tty.h	55;"	d
+TTY_READY	src/tty.h	52;"	d
+TTY_RESP	src/tty.h	54;"	d
+TTY_RQST	src/tty.h	53;"	d
+UART_H	src/uart.h	13;"	d
+VERSION	src/globals.h	6;"	d
+_CFG_H	src/cfg.h	2;"	d
+_CONN_H	src/conn.h	2;"	d
+_CRC_H	src/crc16.h	2;"	d
+_GLOBALS_H	src/globals.h	2;"	d
+_LOG_H_	src/log.h	2;"	d
+_MODBUS_API_H	src/modbus_api.h	2;"	d
+_MQTT_GL_H	src/mqtt.h	2;"	d
+_QUEUE_H	src/queue.h	2;"	d
+_SOCKUTILS_H	src/sock.h	2;"	d
+_STATE_H	src/state.h	2;"	d
+_TTY_H	src/tty.h	2;"	d
+actconn	src/conn.c	/^conn_t *actconn; \/* last active connection *\/$/;"	v
+beg	src/queue.h	/^  conn_t *beg; \/* address of first queue element *\/$/;"	m	struct:__anon3
+bpc	src/tty.h	/^  int bpc;                      \/* bits per character *\/$/;"	m	struct:__anon2
+buf	src/conn.h	/^  unsigned char buf[BUFSIZE];    \/* data buffer *\/$/;"	m	struct:conn_t
+caddr	src/conn.c	/^struct sockaddr_in caddr;$/;"	v	typeref:struct:sockaddr_in
+cbaud	src/uart_posix.c	/^    uint32_t cbaud;$/;"	m	struct:__anon1	file:
+cfg	src/cfg.c	/^cfg_t cfg;$/;"	v
+cfg_init	src/cfg.c	/^cfg_init(void)$/;"	f
+cfg_t	src/cfg.h	/^} cfg_t;$/;"	t	typeref:struct:__anon4
+conn_close	src/conn.c	/^conn_close(conn_t *conn)$/;"	f
+conn_init	src/conn.c	/^conn_init(void)$/;"	f
+conn_loop	src/conn.c	/^conn_loop(void)$/;"	f
+conn_open	src/conn.c	/^conn_open(void)$/;"	f
+conn_read	src/conn.c	/^conn_read(int d, void *buf, size_t nbytes)$/;"	f
+conn_t	src/conn.h	/^typedef struct conn_t$/;"	s
+conn_t	src/conn.h	/^} conn_t;$/;"	t	typeref:struct:conn_t
+conn_write	src/conn.c	/^conn_write(int d, void *buf, size_t nbytes, int istty)$/;"	f
+connmode	src/cfg.h	/^  char connmode[INTBUFSIZE+1];$/;"	m	struct:__anon4
+conntimeout	src/cfg.h	/^  int conntimeout;$/;"	m	struct:__anon4
+ctr	src/conn.h	/^  int ctr;              \/* counter of data in the buffer *\/$/;"	m	struct:conn_t
+cur_logfile	src/log.c	/^char  cur_logfile= 0;$/;"	v
+daemon	src/main.c	/^daemon(nochdir, noclose)$/;"	f
+dbglvl	src/cfg.h	/^  char dbglvl;$/;"	m	struct:__anon4
+easylog_file	src/log.c	/^int easylog_file(const char * logfile)$/;"	f
+easylog_flag_add	src/log.c	/^int easylog_flag_add(int flag)$/;"	f
+easylog_open_file	src/log.c	/^int easylog_open_file()$/;"	f
+easylog_write	src/log.c	/^int easylog_write(char level,const char * fmt, ...)$/;"	f
+easylog_write_log	src/log.c	/^int easylog_write_log(const char * fmt, va_list arg_list)$/;"	f
+end	src/queue.h	/^  conn_t *end; \/* address of last queue element *\/$/;"	m	struct:__anon3
+fd	src/tty.h	/^  int fd;                       \/* tty file descriptor *\/$/;"	m	struct:__anon2
+file_stat_ok	src/log.c	/^int file_stat_ok()$/;"	f
+flushIoBuffer	src/uart_posix.c	/^void flushIoBuffer(void)$/;"	f
+g_logfile	src/log.c	/^char g_logfile[128] = {0};$/;"	v
+g_logfile1	src/log.c	/^char g_logfile1[128] = {0};$/;"	v
+g_master_fd	src/log.c	/^int  g_master_fd = -1;$/;"	v
+g_master_file	src/log.c	/^const char * g_master_file = NULL;$/;"	v
+g_master_flag	src/log.c	/^int  g_master_flag = 0;$/;"	v
+g_master_fp	src/log.c	/^FILE *g_master_fp = NULL;$/;"	v
+g_master_fun	src/log.c	/^const char * g_master_fun = NULL;$/;"	v
+g_master_lev	src/log.c	/^const char * g_master_lev = NULL;$/;"	v
+g_master_line	src/log.c	/^int g_master_line = -1;$/;"	v
+get_api_entity	src/modbus_api.c	/^api_info_t *get_api_entity(int *pLen)$/;"	f
+get_dlt645_contact_addr	src/modbus_api.c	/^int get_dlt645_contact_addr(json_object * input, json_object * output)$/;"	f
+get_mqtt_config	src/modbus_api.c	/^int get_mqtt_config(json_object * input, json_object * output)$/;"	f
+get_my_name	src/log.c	/^int get_my_name(char * file_name, int len)$/;"	f
+get_rs485_attr	src/modbus_api.c	/^int get_rs485_attr(json_object * input, json_object * output)$/;"	f
+get_rs485_data_to_gl_mqtt	src/modbus_api.c	/^int get_rs485_data_to_gl_mqtt(json_object * input, json_object * output)$/;"	f
+get_rs485_ele_meter_vol	src/modbus_api.c	/^int get_rs485_ele_meter_vol(json_object * input, json_object * output)$/;"	f
+get_rs485_mqtt_status	src/modbus_api.c	/^int get_rs485_mqtt_status(json_object * input, json_object * output)$/;"	f
+get_rs485_socket_status	src/modbus_api.c	/^int get_rs485_socket_status(json_object * input, json_object * output)$/;"	f
+get_rs485_temp_humi	src/modbus_api.c	/^int get_rs485_temp_humi(json_object * input, json_object * output)$/;"	f
+get_socket_config	src/modbus_api.c	/^int get_socket_config(json_object * input, json_object * output)$/;"	f
+gl-rs485	Makefile	/^Package\/gl-rs485 = $(Package\/gl-rs485\/Default)$/;"	m
+gl_crc16	src/crc16.c	/^unsigned short gl_crc16 ( unsigned char *arr_buff, unsigned char len,unsigned short crc_v )$/;"	f
+gl_hex2str	src/modbus_api.c	/^void gl_hex2str(uint8_t *input, int  input_len, char *output)$/;"	f
+gl_lstCgiApiFuctionInfo	src/modbus_api.c	/^static api_info_t gl_lstCgiApiFuctionInfo[] = {$/;"	v	file:
+gl_str2acsll	src/modbus_api.c	/^void gl_str2acsll(char  *str_in, int s_len, uint8_t  *acsll_out)$/;"	f
+isdaemon	src/main.c	/^int isdaemon = TRUE;$/;"	v
+len	src/queue.h	/^  int len;     \/* number of elements in the queue *\/$/;"	m	struct:__anon3
+len_ud	src/conn.c	/^int len_ud = 0 ;$/;"	v
+log_init	src/log.c	/^int log_init(char *logname)$/;"	f
+logfullname	src/log.c	/^char logfullname[INTBUFSIZE + 1];$/;"	v
+logname	src/cfg.h	/^  char logname[INTBUFSIZE+1];$/;"	m	struct:__anon4
+logw	src/log.h	33;"	d
+main	src/main.c	/^main(int argc, char *argv[])$/;"	f
+max_sd	src/conn.c	/^int max_sd; \/* major descriptor in the select() sets *\/$/;"	v
+maxconn	src/cfg.h	/^  int maxconn;$/;"	m	struct:__anon4
+maxtry	src/cfg.h	/^  int maxtry;$/;"	m	struct:__anon4
+modify_rs485_temp_humi_id	src/modbus_api.c	/^int modify_rs485_temp_humi_id(json_object * input, json_object * output)$/;"	f
+mqtt_loop	src/mqtt.c	/^int mqtt_loop(void)$/;"	f
+mqttaddr	src/cfg.h	/^  char mqttaddr[INTBUFSIZE+1];$/;"	m	struct:__anon4
+mqttautoconn	src/cfg.h	/^  int mqttautoconn;$/;"	m	struct:__anon4
+mqttautoconninteval	src/cfg.h	/^  int mqttautoconninteval;$/;"	m	struct:__anon4
+mqttautoconnmaxtime	src/cfg.h	/^  int mqttautoconnmaxtime;$/;"	m	struct:__anon4
+mqttclientid	src/cfg.h	/^  char mqttclientid[INTBUFSIZE+1];$/;"	m	struct:__anon4
+mqttinterval	src/cfg.h	/^  int mqttinterval;$/;"	m	struct:__anon4
+mqttpassword	src/cfg.h	/^  char mqttpassword[INTBUFSIZE+1];$/;"	m	struct:__anon4
+mqttpublish	src/cfg.h	/^  char mqttpublish[INTBUFSIZE+1];$/;"	m	struct:__anon4
+mqttqos	src/cfg.h	/^  int mqttqos;$/;"	m	struct:__anon4
+mqttsubscribe	src/cfg.h	/^  char mqttsubscribe[INTBUFSIZE+1];$/;"	m	struct:__anon4
+mqtttimeout	src/cfg.h	/^  int mqtttimeout;$/;"	m	struct:__anon4
+mqttusername	src/cfg.h	/^  char mqttusername[INTBUFSIZE+1];$/;"	m	struct:__anon4
+my_hex_str_to_i	src/modbus_api.c	/^unsigned char my_hex_str_to_i(char *s)$/;"	f
+my_hex_str_to_i_l	src/modbus_api.c	/^unsigned char my_hex_str_to_i_l(char *s,unsigned char len,unsigned char offset)$/;"	f
+next	src/conn.h	/^  struct conn_t *next;  \/* linked list next connection *\/$/;"	m	struct:conn_t	typeref:struct:conn_t::conn_t
+nspeed	src/uart_posix.c	/^    uint32_t nspeed;$/;"	m	struct:__anon1	file:
+one_time	src/conn.c	/^char one_time = 1;$/;"	v
+origTTYAttrs	src/uart_posix.c	/^static struct termios origTTYAttrs;$/;"	v	typeref:struct:termios	file:
+port	src/tty.h	/^  char *port;                   \/* serial port device name *\/$/;"	m	struct:__anon2
+powTen	src/cfg.c	/^int powTen(int n)$/;"	f
+prev	src/conn.h	/^  struct conn_t *prev;  \/* linked list previous connection *\/$/;"	m	struct:conn_t	typeref:struct:conn_t::conn_t
+queue	src/main.c	/^queue_t queue;$/;"	v
+queue_delete_elem	src/queue.c	/^queue_delete_elem(queue_t *queue, conn_t *conn)$/;"	f
+queue_init	src/queue.c	/^queue_init(queue_t *queue)$/;"	f
+queue_new_elem	src/queue.c	/^queue_new_elem(queue_t *queue)$/;"	f
+queue_next_elem	src/queue.c	/^queue_next_elem(queue_t *queue, conn_t *conn)$/;"	f
+queue_t	src/queue.h	/^} queue_t;$/;"	t	typeref:struct:__anon3
+read_dlt645_data	src/modbus_api.c	/^int read_dlt645_data(json_object * input, json_object * output)$/;"	f
+read_len	src/conn.h	/^  int read_len;         \/* length of modbus frame to read *\/$/;"	m	struct:conn_t
+read_rs485_data	src/modbus_api.c	/^int read_rs485_data(json_object * input, json_object * output)$/;"	f
+remote_addr	src/conn.h	/^  char remote_addr[INET6_ADDRSTRLEN]; \/* remote client address *\/$/;"	m	struct:conn_t
+remove_blank	src/modbus_api.c	/^char  remove_blank(char *str)$/;"	f
+remove_blank1	src/modbus_api.c	/^char  remove_blank1(char *str,int count)$/;"	f
+rs485_mqtt_start	src/modbus_api.c	/^int rs485_mqtt_start(json_object * input, json_object * output)$/;"	f
+rs485_mqtt_stop	src/modbus_api.c	/^int rs485_mqtt_stop(json_object * input, json_object * output)$/;"	f
+rs485_socket_start	src/modbus_api.c	/^int rs485_socket_start(json_object * input, json_object * output)$/;"	f
+rs485_socket_stop	src/modbus_api.c	/^int rs485_socket_stop(json_object * input, json_object * output)$/;"	f
+rxbuf	src/tty.h	/^  unsigned char rxbuf[TTY_BUFSIZE]; \/* receiving buffer *\/$/;"	m	struct:__anon2
+rxlen	src/tty.h	/^  unsigned int rxlen;           \/* rx data length *\/$/;"	m	struct:__anon2
+sa_len	src/sock.h	12;"	d
+savedtios	src/tty.h	/^  struct termios savedtios;     \/* saved termios structure *\/$/;"	m	struct:__anon2	typeref:struct:__anon2::termios
+sd	src/conn.h	/^  int sd;               \/* socket descriptor *\/$/;"	m	struct:conn_t
+serialHandle	src/uart_posix.c	/^static int32_t serialHandle = -1;$/;"	v	file:
+server_sd	src/main.c	/^int server_sd = -1;$/;"	v
+serveraddr	src/cfg.h	/^  char serveraddr[INTBUFSIZE+1];$/;"	m	struct:__anon4
+serverport	src/cfg.h	/^  int serverport;$/;"	m	struct:__anon4
+set_mqtt_config	src/modbus_api.c	/^int set_mqtt_config(json_object * input, json_object * output)$/;"	f
+set_rs485_attr	src/modbus_api.c	/^int set_rs485_attr(json_object * input, json_object * output)$/;"	f
+set_socket_config	src/modbus_api.c	/^int set_socket_config(json_object * input, json_object * output)$/;"	f
+sock_accept	src/sock.c	/^sock_accept(int server_sd, struct sockaddr *rmt_addr, socklen_t rmt_len, int blkmode)$/;"	f
+sock_addr	src/sock.c	/^sock_addr(struct sockaddr *sa)$/;"	f
+sock_create	src/sock.c	/^sock_create(int blkmode, sa_family_t sa_family)$/;"	f
+sock_create_server	src/sock.c	/^sock_create_server(char *server_ip, unsigned short server_port, int blkmode)$/;"	f
+sock_set_blkmode	src/sock.c	/^sock_set_blkmode(int sd, int blkmode)$/;"	f
+speed	src/tty.h	/^  int speed;                    \/* serial port speed *\/$/;"	m	struct:__anon2
+speedTab	src/uart_posix.c	/^} speedTab[] = {$/;"	v	typeref:struct:__anon1	file:
+state	src/conn.h	/^  int state;            \/* current state *\/$/;"	m	struct:conn_t
+state_conn_set	src/state.c	/^state_conn_set(conn_t *conn, int state)$/;"	f
+strToNumber	src/cfg.c	/^int strToNumber(char *numbers)$/;"	f
+terminal_send_read	src/modbus_api.c	/^int terminal_send_read(json_object * input, json_object * output)$/;"	f
+timeout	src/conn.h	/^  int timeout;          \/* timeout value, secs *\/$/;"	m	struct:conn_t
+tios	src/tty.h	/^  struct termios tios;          \/* working termios structure *\/$/;"	m	struct:__anon2	typeref:struct:__anon2::termios
+trxcntl	src/cfg.h	/^  int trxcntl;$/;"	m	struct:__anon4
+trxcntl	src/tty.h	/^  int trxcntl;                  \/* trx control type (enum - see values in config.h) *\/$/;"	m	struct:__anon2
+trxcntl_file	src/cfg.h	/^  char trxcntl_file[INTBUFSIZE+1];$/;"	m	struct:__anon4
+tty	src/main.c	/^ttydata_t tty;$/;"	v
+tty_open	src/conn.c	/^int tty_open(ttydata_t *mod)$/;"	f
+tty_read	src/conn.c	/^tty_read(int d, void *buf, size_t nbytes)$/;"	f
+tty_reinit	src/conn.c	/^void tty_reinit()$/;"	f
+tty_reopen	src/conn.c	/^int tty_reopen()$/;"	f
+tty_write	src/conn.c	/^tty_write(int d, void *buf, size_t nbytes)$/;"	f
+tty_write_file	src/conn.c	/^ssize_t tty_write_file(char * file)$/;"	f
+tty_write_read	src/conn.c	/^tty_write_read(char * buf, size_t nbytes,char type)$/;"	f
+ttydata_t	src/tty.h	/^} ttydata_t;$/;"	t	typeref:struct:__anon2
+ttymode	src/cfg.h	/^  char ttymode[INTBUFSIZE+1];$/;"	m	struct:__anon4
+ttyport	src/cfg.h	/^  char ttyport[INTBUFSIZE+1];$/;"	m	struct:__anon4
+ttyspeed	src/cfg.h	/^  int ttyspeed;$/;"	m	struct:__anon4
+ttytimeout	src/cfg.h	/^  int ttytimeout;$/;"	m	struct:__anon4
+txbuf	src/tty.h	/^  unsigned char txbuf[TTY_BUFSIZE]; \/* transmitting buffer *\/$/;"	m	struct:__anon2
+txlen	src/tty.h	/^  unsigned int txlen;           \/* tx data length *\/$/;"	m	struct:__anon2
+uartClose	src/uart_posix.c	/^int32_t uartClose(void)$/;"	f
+uartCloseSerial	src/uart_posix.c	/^static int32_t uartCloseSerial(int32_t handle)$/;"	f	file:
+uartOpen	src/uart_posix.c	/^int32_t uartOpen(int8_t* port, uint32_t baudRate, uint32_t rtsCts, int32_t timeout)$/;"	f
+uartOpenSerial	src/uart_posix.c	/^static int32_t uartOpenSerial(int8_t* device, uint32_t bps, uint32_t dataBits, uint32_t parity,$/;"	f	file:
+uartRx	src/uart_posix.c	/^int32_t uartRx(uint32_t dataLength, uint8_t* data)$/;"	f
+uartRxExpires	src/uart_posix.c	/^int32_t uartRxExpires(uint32_t dataLength, uint8_t* data, int32_t timeout)$/;"	f
+uartRxNonBlocking	src/uart_posix.c	/^int32_t uartRxNonBlocking(uint32_t dataLength, uint8_t* data)$/;"	f
+uartRxPeek	src/uart_posix.c	/^int32_t uartRxPeek(void)$/;"	f
+uartTx	src/uart_posix.c	/^int32_t uartTx(uint32_t dataLength, uint8_t* data)$/;"	f
+uartTxNonBlocking	src/uart_posix.c	/^int32_t uartTxNonBlocking(uint32_t dataLength, uint8_t* data)$/;"	f
+usage	src/main.c	/^usage(char *exename)$/;"	f
+write_rs485_data	src/modbus_api.c	/^int write_rs485_data(json_object * input, json_object * output)$/;"	f
+writebuf	src/tty.h	/^  unsigned char writebuf[TTY_BUFSIZE]; $/;"	m	struct:__anon2
