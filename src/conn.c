@@ -521,26 +521,27 @@ sele:
                         				  }  */
                         //logw(2, "conn[%s]: request: %s", curconn->remote_addr, t);
                         logw(2, "conn[%s]: request: %s", curconn->remote_addr, curconn->buf);
+                        if(!strcmp(cfg.ttytype,"str")){
+                            remove_blank1(tty.txbuf,tty.txlen);
+                            tty.txlen = strlen(tty.txbuf);
 
-                        remove_blank1(tty.txbuf,tty.txlen);
-                        tty.txlen = strlen(tty.txbuf);
+                            if(tty.txlen%2) {
+                                strncpy(curconn->buf,"data format error",17);
+                                tty.rxlen = 17;
+                                logw(0,"data format error \n");
+                                state_conn_set(curconn, CONN_RESP);
+                                FD_MSET(curconn->sd, &sdsetwr);
+                                goto socketsend;
+                            }
 
-                        if(tty.txlen%2) {
-                            strncpy(curconn->buf,"data format error",17);
-                            tty.rxlen = 17;
-                            logw(0,"data format error \n");
-                            state_conn_set(curconn, CONN_RESP);
-                            FD_MSET(curconn->sd, &sdsetwr);
-                            goto socketsend;
+                            gl_str2acsll(tty.txbuf,tty.txlen,tty.writebuf);
+                            tty.txlen = tty.txlen/2;
                         }
-
-                        gl_str2acsll(tty.txbuf,tty.txlen,tty.writebuf);
-
                         //tty write
                         if (FD_ISSET(tty.fd, &sdsetwr)) {
 
                             tcflush(tty.fd, TCIOFLUSH);
-                            rc = tty_write(tty.fd, tty.writebuf,tty.txlen/2);
+                            rc = tty_write(tty.fd, tty.writebuf,tty.txlen);
 
                             if (rc < 0) {
                                 logw(3,"tty write error %d\n",rc);
@@ -565,8 +566,13 @@ sele:
                                         state_conn_set(curconn, CONN_RESP);
                                     } else {
                                         memset(curconn->buf,'\0',sizeof(curconn->buf));
-                                        gl_hex2str(tty.rxbuf,tty.rxlen,curconn->buf);
-                                        tty.rxlen *=2 ;
+                                        if(!strcmp(cfg.ttytype,"str")){
+                                            gl_hex2str(tty.rxbuf,tty.rxlen,curconn->buf);
+                                            tty.rxlen *=2 ;
+                                        }
+                                        else{
+                                            strncpy(curconn->buf,tty.rxbuf,tty.rxlen);
+                                        }
                                         state_conn_set(curconn, CONN_RESP);
                                     }
                                     logw(2, "tty: read len %d \n",tty.rxlen);

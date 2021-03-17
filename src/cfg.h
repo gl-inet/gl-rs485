@@ -30,18 +30,20 @@ typedef struct
   int mqttautoconninteval;
   int mqtttimeout;
   int mqttinterval;
+  char ttytype[8];
+  /* tty mode */
+  char ttymode[8];
+  /* TCP/UDP server/client */
+  char connmode[8];
+  /* tty port name */
+  char ttyport[128];
   /* log file name */
   char logname[INTBUFSIZE+1];
-  /* tty port name */
-  char ttyport[INTBUFSIZE+1];
-  /* tty mode */
-  char ttymode[INTBUFSIZE+1];
   /* trx control sysfs file */
   char trxcntl_file[INTBUFSIZE+1];
   /* TCP server address */
   char serveraddr[INTBUFSIZE+1];
-  /* TCP/UDP server/client */
-  char connmode[INTBUFSIZE+1];
+
   char mqttaddr[INTBUFSIZE+1];
   char mqttusername[INTBUFSIZE+1];
   char mqttpassword[INTBUFSIZE+1];

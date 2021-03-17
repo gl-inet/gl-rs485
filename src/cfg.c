@@ -42,6 +42,7 @@ cfg_init(void)
     char speed[8] = {0};
     char mode[8] = {0};
     char logv[8] = {0};
+    char type[8] = {0};
     char timeout[8] = {0};
     char mode_s[8] = {0};
     char timeout_s[8] = {0};
@@ -67,6 +68,7 @@ cfg_init(void)
     guci2_get(ctx, "rs485.rs485.mode", mode);
     guci2_get(ctx, "rs485.rs485.timeout", timeout);
     guci2_get(ctx, "rs485.rs485.log", logv);
+    guci2_get(ctx, "rs485.rs485.type", type);
 
     guci2_get(ctx, "rs485.socket.timeout", timeout_s);
     guci2_get(ctx, "rs485.socket.mode", mode_s);
@@ -91,6 +93,7 @@ cfg_init(void)
     strncpy(cfg.logname, LOGNAME, INTBUFSIZE);
 
     strncpy(cfg.ttymode, mode, sizeof(mode));
+    strncpy(cfg.ttytype, type, sizeof(type));
 
     strncpy(cfg.serveraddr, addr, sizeof(addr));
     strncpy(cfg.connmode, mode_s, sizeof(mode_s));

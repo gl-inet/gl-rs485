@@ -20,7 +20,7 @@
 /***
  * @api {get} /rs485/attr/get /rs485/attr/get
  * @apiGroup rs485
- * @apiVersion 1.0.1
+ * @apiVersion 1.0.2
  * @apiDescription get rs485 attributes.
  * @apiHeader {string} Authorization Users unique token.
  * @apiSuccess {integer} code return code.
@@ -35,6 +35,7 @@
  *		"speed": "9600", //0-115200
  *		"mode": "8n1",   //[5/6/7/8][n/e/o][1/2]  n:none  e:even parity  o:odd parity
  *		"timeout": "500" //0-65535
+ *		"type": "hex"   //[str/hex]
  *	}
  * }
  */
@@ -45,10 +46,12 @@ int get_rs485_attr(json_object * input, json_object * output)
     char speed[8] = {0};
     char mode[8] = {0};
     char timeout[8] = {0};
+    char type[8] = {0};
     guci2_get(ctx, "rs485.rs485.device", device);
     guci2_get(ctx, "rs485.rs485.speed", speed);
     guci2_get(ctx, "rs485.rs485.mode", mode);
     guci2_get(ctx, "rs485.rs485.timeout", timeout);
+    guci2_get(ctx, "rs485.rs485.type", type);
 
     guci2_free(ctx);
 
@@ -57,6 +60,7 @@ int get_rs485_attr(json_object * input, json_object * output)
     gjson_add_string(rs485_config, "speed", speed);
     gjson_add_string(rs485_config, "mode", mode);
     gjson_add_string(rs485_config, "timeout", timeout);
+    gjson_add_string(rs485_config, "type", type);
 
 
     gjson_add_object(output, "rs485_config",rs485_config);
@@ -67,13 +71,14 @@ int get_rs485_attr(json_object * input, json_object * output)
 /***
  * @api {post} /rs485/attr/set /rs485/attr/set
  * @apiGroup rs485
- * @apiVersion 1.0.1
+ * @apiVersion 1.0.2
  * @apiDescription set rs485 attributes.
  * @apiHeader {string} Authorization Users unique token.
  * @apiParam {integer} speed  Serial port baud rate :0-115200
  * @apiParam {integer} timeout overtime time :0-65535(ms)
  * @apiParam {string}  device Device node name
  * @apiParam {string}  mode  Data bit,parity,stop bit. [5/6/7/8][n/e/o][1/2]  n:none  e:even parity  o:odd parity
+ * @apiParam {string}  type  Data transmission type [str/hex]
  * @apiSuccess {integer} code return code.
  * @apiSuccess (Code) {integer} 0 success.
  * @apiSuccess (Code) {integer} -1 Invalid user, permission denied or not logged in!
@@ -85,12 +90,14 @@ int set_rs485_attr(json_object * input, json_object * output)
     char *device = gjson_get_string(input, "device");
     char *mode = gjson_get_string(input, "mode");
     char *timeout = gjson_get_string(input, "timeout");
+    char *type = gjson_get_string(input, "type");
 
     struct uci_context* ctx = guci2_init();
     guci2_set(ctx, "rs485.rs485.device", device);
     guci2_set(ctx, "rs485.rs485.speed",  speed);
     guci2_set(ctx, "rs485.rs485.mode",   mode);
     guci2_set(ctx, "rs485.rs485.timeout",  timeout);
+    guci2_set(ctx, "rs485.rs485.type",  type);
     guci2_commit(ctx, "rs485");
 
     guci2_free(ctx);
@@ -956,7 +963,7 @@ int write_rs485_data(json_object * input, json_object * output)
  */
 int terminal_send_read(json_object * input, json_object * output)
 {
-    char *str_hex = gjson_get_string(input, "show_type");
+//   char *str_hex = gjson_get_string(input, "show_type");
     char s_send = gjson_get_boolean(input, "show_send");
     char s_time = gjson_get_boolean(input, "show_date");
     char *s_data = gjson_get_string(input, "data");
@@ -974,6 +981,7 @@ int terminal_send_read(json_object * input, json_object * output)
     }
 
     cfg_init();
+    char *str_hex = cfg.ttytype;
     fd = uartOpen(cfg.ttyport,cfg.ttyspeed,0,cfg.ttytimeout);
 
 

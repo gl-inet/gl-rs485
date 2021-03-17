@@ -75,7 +75,6 @@ start:
         }
 
         if(topicName) {
-            logw(1,"Message received on topic %s is %d %s   \n", topicName, m->payloadlen, (char*)(m->payload));
             if(m->payloadlen > 1024) {
                 pubmsg.payload = "out len";
                 pubmsg.payloadlen = 7;
@@ -83,17 +82,26 @@ start:
             } else {
                 strncpy(write_485data,(unsigned char*)(m->payload),m->payloadlen);
                 write_485data[m->payloadlen] = 0;
+                logw(1,"Message received on topic %s ,len:%d,%s\n", topicName, m->payloadlen,write_485data);
             }
-            remove_blank1(write_485data,m->payloadlen);
-            nbytes = strlen(write_485data);
-            if(nbytes%2) {
-                pubmsg.payload = "data format error";
-                pubmsg.payloadlen = 17;
-                logw(3,"date len err %d\n",nbytes);
-                goto mqttsend;
+            if(!strcmp(cfg.ttytype,"str")){
+                remove_blank1(write_485data,m->payloadlen);
+                nbytes = strlen(write_485data);
+                if(nbytes%2) {
+                    pubmsg.payload = "data format error";
+                    pubmsg.payloadlen = 17;
+                    logw(3,"date len err %d\n",nbytes);
+                    goto mqttsend;
+                }
+                gl_str2acsll(write_485data,nbytes,write_buff);
+                nbytes=nbytes/2;
             }
-            gl_str2acsll(write_485data,nbytes,write_buff);
-            tty_write(fd,write_buff,nbytes/2);
+            else{
+                nbytes=m->payloadlen;
+                strncpy(write_buff,write_485data,nbytes);
+            }
+
+            tty_write(fd,write_buff,nbytes);
 
             count = 0;
             ret = 8;
@@ -106,10 +114,16 @@ start:
 
             if(count > 0) {
                 char alldata[1024] = {0};
-                gl_hex2str(rec_buff,count,alldata);
-                //  gjson_add_string(rs485_data,"alldata",alldata);
-                pubmsg.payload = &alldata;
-                pubmsg.payloadlen = strlen(alldata);
+                if(!strcmp(cfg.ttytype,"str")){
+                    gl_hex2str(rec_buff,count,alldata);
+                    //  gjson_add_string(rs485_data,"alldata",alldata);
+                    pubmsg.payload = &alldata;
+                    pubmsg.payloadlen = strlen(alldata);
+                }
+                else{
+                    pubmsg.payload = &rec_buff;
+                    pubmsg.payloadlen = count;
+                }
             } else {
                 pubmsg.payload = "no data";
                 pubmsg.payloadlen = 7;
