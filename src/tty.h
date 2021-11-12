@@ -57,22 +57,21 @@
 /*
  * TTY related data storage structure
  */
-typedef struct
-{
-  int fd;                       /* tty file descriptor */
-  int speed;                    /* serial port speed */
-  char *port;                   /* serial port device name */
-  int bpc;                      /* bits per character */
+typedef struct {
+    int fd;                       /* tty file descriptor */
+    int speed;                    /* serial port speed */
+    char *port;                   /* serial port device name */
+    int bpc;                      /* bits per character */
 #ifdef TRXCTL
-  int trxcntl;                  /* trx control type (enum - see values in config.h) */
+    int trxcntl;                  /* trx control type (enum - see values in config.h) */
 #endif
-  struct termios tios;          /* working termios structure */
-  struct termios savedtios;     /* saved termios structure */
-  unsigned int txlen;           /* tx data length */
-  unsigned int rxlen;           /* rx data length */
-  unsigned char txbuf[TTY_BUFSIZE]; /* transmitting buffer */
-  unsigned char rxbuf[TTY_BUFSIZE]; /* receiving buffer */
-  unsigned char writebuf[TTY_BUFSIZE]; 
+    struct termios tios;          /* working termios structure */
+    struct termios savedtios;     /* saved termios structure */
+    unsigned int txlen;           /* tx data length */
+    unsigned int rxlen;           /* rx data length */
+    unsigned char txbuf[TTY_BUFSIZE]; /* transmitting buffer */
+    unsigned char rxbuf[TTY_BUFSIZE]; /* receiving buffer */
+    unsigned char writebuf[TTY_BUFSIZE];
 } ttydata_t;
 
 /* prototypes */

@@ -26,19 +26,18 @@ queue_t queue;
 #include <fcntl.h>
 #include <unistd.h>
 
-int
-daemon(nochdir, noclose)
+int daemon(nochdir, noclose)
 int nochdir, noclose;
 {
     int fd;
 
     switch (fork()) {
-    case -1:
-        return (-1);
-    case 0:
-        break;
-    default:
-        _exit(0);
+        case -1:
+            return (-1);
+        case 0:
+            break;
+        default:
+            _exit(0);
     }
 
     if (setsid() == -1)
@@ -58,8 +57,7 @@ int nochdir, noclose;
 }
 #endif
 
-void
-usage(char *exename)
+void usage(char *exename)
 {
     cfg_init();
     printf("%s-%s  \n\n"
@@ -97,14 +95,13 @@ usage(char *exename)
     exit(0);
 }
 
-int
-main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     int err = 0, rc;
     char *exename;
     char ttyparity;
     char ttybuf[256] = {0};
-    char conn_type[10] ="socket";
+    char conn_type[10] = "socket";
 
     cfg_init();
 
@@ -122,130 +119,130 @@ main(int argc, char *argv[])
                         "v:L:"
                         "p:s:m:A:B:P:C:T:F:S:H:c:")) != RC_ERR) {
         switch (rc) {
-        case '?':
-            exit(-1);
-        case 'd':
-            isdaemon = FALSE;
-            break;
-        case 't':
-            strncpy(cfg.ttytimeout, optarg, INTBUFSIZE);;
-            break;
+            case '?':
+                exit(-1);
+            case 'd':
+                isdaemon = FALSE;
+                break;
+            case 't':
+                strncpy(cfg.ttytimeout, optarg, INTBUFSIZE);;
+                break;
 #ifdef TRXCTL
-        case 't':
-            cfg.trxcntl = TRX_RTS;
-            break;
-        case 'y':
-            cfg.trxcntl = TRX_SYSFS_1;
-            strncpy(cfg.trxcntl_file, optarg, INTBUFSIZE);
-            break;
-        case 'Y':
-            cfg.trxcntl = TRX_SYSFS_0;
-            strncpy(cfg.trxcntl_file, optarg, INTBUFSIZE);
-            break;
+            case 't':
+                cfg.trxcntl = TRX_RTS;
+                break;
+            case 'y':
+                cfg.trxcntl = TRX_SYSFS_1;
+                strncpy(cfg.trxcntl_file, optarg, INTBUFSIZE);
+                break;
+            case 'Y':
+                cfg.trxcntl = TRX_SYSFS_0;
+                strncpy(cfg.trxcntl_file, optarg, INTBUFSIZE);
+                break;
 #endif
-        case 'v':
-            cfg.dbglvl = (char)strtol(optarg, NULL, 0);
-            if (cfg.dbglvl < 0 || cfg.dbglvl > 5) {
-                /* report about invalid log level */
-                printf("%s: -v: invalid loglevel value"
-                       " (%d, must be 0-5)\n", exename, cfg.dbglvl);
-                exit(-1);
-            }
-            break;
-        case 'L':
-            if (*optarg != '/') {
-                if (*optarg == '-') {
-                    /* logging to file disabled */
-                    *cfg.logname = '\0';
-                } else {
-                    /* concatenate given log file name with default path */
-                    strncpy(cfg.logname, LOGPATH, INTBUFSIZE);
-                    strncat(cfg.logname, optarg, INTBUFSIZE - strlen(cfg.logname));
+            case 'v':
+                cfg.dbglvl = (char)strtol(optarg, NULL, 0);
+                if (cfg.dbglvl < 0 || cfg.dbglvl > 5) {
+                    /* report about invalid log level */
+                    printf("%s: -v: invalid loglevel value"
+                           " (%d, must be 0-5)\n", exename, cfg.dbglvl);
+                    exit(-1);
                 }
-            } else strncpy(cfg.logname, optarg, INTBUFSIZE);
-            break;
-        case 'p':
-            if (*optarg != '/') {
-                /* concatenate given port name with default
-                   path to devices mountpoint */
-                strncpy(cfg.ttyport, "/dev/", INTBUFSIZE);
-                strncat(cfg.ttyport, optarg, INTBUFSIZE - strlen(cfg.ttyport));
-            } else strncpy(cfg.ttyport, optarg, INTBUFSIZE);
-            break;
-        case 's':
-            cfg.ttyspeed = strtoul(optarg, NULL, 0);
-            break;
-        case 'm':
-            strncpy(cfg.ttymode, optarg, INTBUFSIZE);
-            /* tty mode sanity checks */
-            if (strlen(cfg.ttymode) != 3) {
-                printf("%s: -m: invalid serial port mode ('%s')\n",
-                       exename, cfg.ttymode);
-                exit(-1);
-            }
-            if (cfg.ttymode[0] != '8') {
-                printf("%s: -m: invalid serial port character size "
-                       "(%c, must be 8)\n",
-                       exename, cfg.ttymode[0]);
-                exit(-1);
-            }
-            ttyparity = toupper(cfg.ttymode[1]);
-            if (ttyparity != 'N' && ttyparity != 'E' && ttyparity != 'O') {
-                printf("%s: -m: invalid serial port parity "
-                       "(%c, must be N, E or O)\n", exename, ttyparity);
-                exit(-1);
-            }
-            if (cfg.ttymode[2] != '1' && cfg.ttymode[2] != '2') {
-                printf("%s: -m: invalid serial port stop bits "
-                       "(%c, must be 1 or 2)\n", exename, cfg.ttymode[2]);
-                exit(-1);
-            }
-            break;
-        case 'A':
-            strncpy(cfg.serveraddr, optarg, INTBUFSIZE);
-            break;
-        case 'P':
-            cfg.serverport = strtoul(optarg, NULL, 0);
-            break;
-        case 'C':
-            cfg.maxconn = strtoul(optarg, NULL, 0);
-            if (cfg.maxconn < 1 || cfg.maxconn > MAX_MAXCONN) {
-                /* report about invalid max conn number */
-                printf("%s: -C: invalid maxconn value"
-                       " (%d, must be 1-%d)\n", exename, cfg.maxconn, MAX_MAXCONN);
-                exit(-1);
-            }
-            break;
-        case 'T':
-            cfg.conntimeout = strtoul(optarg, NULL, 0);
-            if (cfg.conntimeout > MAX_CONNTIMEOUT) {
-                /* report about invalid conn timeout value */
-                printf("%s: -T: invalid conn timeout value"
-                       " (%d, must be 1-%d)\n", exename, cfg.conntimeout, MAX_CONNTIMEOUT);
-                exit(-1);
-            }
-            break;
-        case 'F':
-            strncpy(ttybuf, optarg, 256);
-            tty_write_file(ttybuf);
-            exit(0);
-        case 'S':
-            strncpy(ttybuf, optarg, 256);
-            tty_write_read(ttybuf,strlen(ttybuf),'S');
-            exit(0);
-        case 'H':
-            strncpy(ttybuf, optarg, 256);
-            tty_write_read(ttybuf,strlen(ttybuf),'H');
-            exit(0);
-        case 'M':
-            strncpy(cfg.connmode, optarg, INTBUFSIZE);
-            break;
-        case 'B':
-            strncpy(conn_type, optarg, 10);
-            break;
-        case 'h':
-            usage(exename);
-            break;
+                break;
+            case 'L':
+                if (*optarg != '/') {
+                    if (*optarg == '-') {
+                        /* logging to file disabled */
+                        *cfg.logname = '\0';
+                    } else {
+                        /* concatenate given log file name with default path */
+                        strncpy(cfg.logname, LOGPATH, INTBUFSIZE);
+                        strncat(cfg.logname, optarg, INTBUFSIZE - strlen(cfg.logname));
+                    }
+                } else strncpy(cfg.logname, optarg, INTBUFSIZE);
+                break;
+            case 'p':
+                if (*optarg != '/') {
+                    /* concatenate given port name with default
+                       path to devices mountpoint */
+                    strncpy(cfg.ttyport, "/dev/", INTBUFSIZE);
+                    strncat(cfg.ttyport, optarg, INTBUFSIZE - strlen(cfg.ttyport));
+                } else strncpy(cfg.ttyport, optarg, INTBUFSIZE);
+                break;
+            case 's':
+                cfg.ttyspeed = strtoul(optarg, NULL, 0);
+                break;
+            case 'm':
+                strncpy(cfg.ttymode, optarg, INTBUFSIZE);
+                /* tty mode sanity checks */
+                if (strlen(cfg.ttymode) != 3) {
+                    printf("%s: -m: invalid serial port mode ('%s')\n",
+                           exename, cfg.ttymode);
+                    exit(-1);
+                }
+                if (cfg.ttymode[0] != '8') {
+                    printf("%s: -m: invalid serial port character size "
+                           "(%c, must be 8)\n",
+                           exename, cfg.ttymode[0]);
+                    exit(-1);
+                }
+                ttyparity = toupper(cfg.ttymode[1]);
+                if (ttyparity != 'N' && ttyparity != 'E' && ttyparity != 'O') {
+                    printf("%s: -m: invalid serial port parity "
+                           "(%c, must be N, E or O)\n", exename, ttyparity);
+                    exit(-1);
+                }
+                if (cfg.ttymode[2] != '1' && cfg.ttymode[2] != '2') {
+                    printf("%s: -m: invalid serial port stop bits "
+                           "(%c, must be 1 or 2)\n", exename, cfg.ttymode[2]);
+                    exit(-1);
+                }
+                break;
+            case 'A':
+                strncpy(cfg.serveraddr, optarg, INTBUFSIZE);
+                break;
+            case 'P':
+                cfg.serverport = strtoul(optarg, NULL, 0);
+                break;
+            case 'C':
+                cfg.maxconn = strtoul(optarg, NULL, 0);
+                if (cfg.maxconn < 1 || cfg.maxconn > MAX_MAXCONN) {
+                    /* report about invalid max conn number */
+                    printf("%s: -C: invalid maxconn value"
+                           " (%d, must be 1-%d)\n", exename, cfg.maxconn, MAX_MAXCONN);
+                    exit(-1);
+                }
+                break;
+            case 'T':
+                cfg.conntimeout = strtoul(optarg, NULL, 0);
+                if (cfg.conntimeout > MAX_CONNTIMEOUT) {
+                    /* report about invalid conn timeout value */
+                    printf("%s: -T: invalid conn timeout value"
+                           " (%d, must be 1-%d)\n", exename, cfg.conntimeout, MAX_CONNTIMEOUT);
+                    exit(-1);
+                }
+                break;
+            case 'F':
+                strncpy(ttybuf, optarg, 256);
+                tty_write_file(ttybuf);
+                exit(0);
+            case 'S':
+                strncpy(ttybuf, optarg, 256);
+                tty_write_read(ttybuf, strlen(ttybuf), 'S');
+                exit(0);
+            case 'H':
+                strncpy(ttybuf, optarg, 256);
+                tty_write_read(ttybuf, strlen(ttybuf), 'H');
+                exit(0);
+            case 'M':
+                strncpy(cfg.connmode, optarg, INTBUFSIZE);
+                break;
+            case 'B':
+                strncpy(conn_type, optarg, 10);
+                break;
+            case 'h':
+                usage(exename);
+                break;
         }
     }
 
@@ -264,13 +261,13 @@ main(int argc, char *argv[])
         exit(rc);
     }
 
-    struct uci_context* ctx = guci2_init();
+    struct uci_context *ctx = guci2_init();
 
-    if(!strcmp(conn_type,"mqtt")) {
+    if (!strcmp(conn_type, "mqtt")) {
         guci2_set(ctx, "rs485.mqtt.status", "1");
         guci2_commit(ctx, "rs485");
         mqtt_loop();
-    } else if(!strcmp(conn_type,"socket")) {
+    } else if (!strcmp(conn_type, "socket")) {
 
         if (conn_init()) {
             err = errno;

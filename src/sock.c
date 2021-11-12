@@ -6,8 +6,7 @@
  *
  * Return: RC_ERR if there some errors
  */
-int
-sock_set_blkmode(int sd, int blkmode)
+int sock_set_blkmode(int sd, int blkmode)
 {
     int flags;
 
@@ -25,11 +24,10 @@ sock_set_blkmode(int sd, int blkmode)
  *
  * Return: socket descriptor, otherwise RC_ERR if there some errors
  */
-int
-sock_create(int blkmode, sa_family_t sa_family)
+int sock_create(int blkmode, sa_family_t sa_family)
 {
-    int sock=0;
-    if(strncmp(cfg.connmode,"udp",3)) {
+    int sock = 0;
+    if (strncmp(cfg.connmode, "udp", 3)) {
         sock = socket(sa_family, SOCK_STREAM, IPPROTO_TCP);
     } else {
         sock = socket(sa_family, SOCK_DGRAM, IPPROTO_UDP);
@@ -41,7 +39,7 @@ sock_create(int blkmode, sa_family_t sa_family)
     }
 
     /* set socket to desired blocking mode */
-    if(strncmp(cfg.connmode,"tcpc",4)) {
+    if (strncmp(cfg.connmode, "tcpc", 4)) {
         if (sock_set_blkmode(sock, blkmode) == -1) {
             logw(2, "sock_create(): unable to set "
                  "server socket to nonblocking (%s)",
@@ -69,8 +67,7 @@ sock_create(int blkmode, sa_family_t sa_family)
  *
  * Return: socket descriptor, otherwise RC_ERR if there some errors
  */
-int
-sock_create_server(char *server_ip, unsigned short server_port, int blkmode)
+int sock_create_server(char *server_ip, unsigned short server_port, int blkmode)
 {
     struct sockaddr_storage server_sockaddr;
     int sock_opt = 1;
@@ -100,12 +97,12 @@ sock_create_server(char *server_ip, unsigned short server_port, int blkmode)
 
     /* parse IP port */
     switch (server_sockaddr.ss_family) {
-    case AF_INET:
-        (*((struct sockaddr_in *)&server_sockaddr)).sin_port = htons(server_port);
-        break;
-    case AF_INET6:
-        (*((struct sockaddr_in6 *)&server_sockaddr)).sin6_port = htons(server_port);
-        break;
+        case AF_INET:
+            (*((struct sockaddr_in *)&server_sockaddr)).sin_port = htons(server_port);
+            break;
+        case AF_INET6:
+            (*((struct sockaddr_in6 *)&server_sockaddr)).sin6_port = htons(server_port);
+            break;
     }
 
     /* create socket in desired blocking mode */
@@ -133,9 +130,9 @@ sock_create_server(char *server_ip, unsigned short server_port, int blkmode)
     if ((setsockopt(server_s, SOL_SOCKET,
                     SO_SNDBUF, (void *)&sock_opt,
                     sizeof(sock_opt)) == -1) ||
-        (setsockopt(server_s, SOL_SOCKET,
-                    SO_RCVBUF, (void *)&sock_opt,
-                    sizeof(sock_opt)) == -1)) {
+            (setsockopt(server_s, SOL_SOCKET,
+                        SO_RCVBUF, (void *)&sock_opt,
+                        sizeof(sock_opt)) == -1)) {
         logw(2, "sock_create_server():"
              " can't set socket TRX buffers sizes (%s)",
              strerror(errno));
@@ -143,7 +140,7 @@ sock_create_server(char *server_ip, unsigned short server_port, int blkmode)
     }
 
     /* bind socket to given address and port */
-    if((!strncmp(cfg.connmode,"udp",3))||(!(strncmp(cfg.connmode,"tcps",4)))) {
+    if ((!strncmp(cfg.connmode, "udp", 3)) || (!(strncmp(cfg.connmode, "tcps", 4)))) {
 
         if (bind(server_s, (struct sockaddr *)&server_sockaddr,
                  sa_len((struct sockaddr *)&server_sockaddr)) == -1) {
@@ -152,7 +149,7 @@ sock_create_server(char *server_ip, unsigned short server_port, int blkmode)
                  strerror(errno));
             return RC_ERR;
         }
-    } else if(!strncmp(cfg.connmode,"tcpc",4)) {
+    } else if (!strncmp(cfg.connmode, "tcpc", 4)) {
 
         if (connect(server_s, (struct sockaddr *)&server_sockaddr,
                     sa_len((struct sockaddr *)&server_sockaddr)) == -1) {
@@ -171,7 +168,7 @@ sock_create_server(char *server_ip, unsigned short server_port, int blkmode)
     }
 
 
-    if(!strncmp(cfg.connmode,"tcps",4)) {
+    if (!strncmp(cfg.connmode, "tcps", 4)) {
         /* let's listen */
         if (listen(server_s, BACKLOG) == -1) {
             logw(3, "sock_create_server():"
@@ -192,12 +189,11 @@ sock_create_server(char *server_ip, unsigned short server_port, int blkmode)
  * Return: socket descriptor, otherwise RC_ERR if there some errors;
  *         RMT_ADDR - ptr to connection info structure
  */
-int
-sock_accept(int server_sd, struct sockaddr *rmt_addr, socklen_t rmt_len, int blkmode)
+int sock_accept(int server_sd, struct sockaddr *rmt_addr, socklen_t rmt_len, int blkmode)
 {
     int sd, sock_opt = SOCKBUFSIZE;
 
-    if(!strncmp(cfg.connmode,"tcps",4)) {
+    if (!strncmp(cfg.connmode, "tcps", 4)) {
         sd = accept(server_sd, rmt_addr, &rmt_len);
     } else {
         sd = server_sd ;
@@ -219,9 +215,9 @@ sock_accept(int server_sd, struct sockaddr *rmt_addr, socklen_t rmt_len, int blk
     if ((setsockopt(sd, SOL_SOCKET,
                     SO_SNDBUF, (void *)&sock_opt,
                     sizeof(sock_opt)) == -1) ||
-        (setsockopt(sd, SOL_SOCKET,
-                    SO_RCVBUF, (void *)&sock_opt,
-                    sizeof(sock_opt)) == -1)) {
+            (setsockopt(sd, SOL_SOCKET,
+                        SO_RCVBUF, (void *)&sock_opt,
+                        sizeof(sock_opt)) == -1)) {
         logw(3, "sock_accept():"
              " can't set socket TRX buffer sizes (%s)",
              strerror(errno));
@@ -233,13 +229,12 @@ sock_accept(int server_sd, struct sockaddr *rmt_addr, socklen_t rmt_len, int blk
 /*
  * Return reference to socket address structure according to its family (AF_INET/AF_INET6)
  */
-void *
-sock_addr(struct sockaddr *sa)
+void *sock_addr(struct sockaddr *sa)
 {
     if (sa->sa_family == AF_INET) {
-        return &(((struct sockaddr_in*)sa)->sin_addr);
+        return &(((struct sockaddr_in *)sa)->sin_addr);
     }
 
-    return &(((struct sockaddr_in6*)sa)->sin6_addr);
+    return &(((struct sockaddr_in6 *)sa)->sin6_addr);
 }
 

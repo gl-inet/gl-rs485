@@ -12,10 +12,10 @@ extern int isdaemon;
 
 int log_init(char *logname);
 
-extern const char* g_master_file;
+extern const char *g_master_file;
 extern int         g_master_line;
-extern const char* g_master_fun;
-extern const char* g_master_lev;
+extern const char *g_master_fun;
+extern const char *g_master_lev;
 
 #define EASYLOG_DATE    (1 << 0)
 #define EASYLOG_TIME    (1 << 1)
@@ -27,8 +27,8 @@ extern const char* g_master_lev;
 
 int easylog_flag_add(int flag);
 //int easylog_flag_rm(int flag);
-int easylog_file(const char * logfile);
-int easylog_write(char level ,const char * fmt, ...);
+int easylog_file(const char *logfile);
+int easylog_write(char level, const char *fmt, ...);
 
 #define logw(level ,fmt, arg...) \
     do{\

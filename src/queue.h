@@ -8,11 +8,10 @@
 /*
  * Queue parameters structure
  */
-typedef struct
-{
-  conn_t *beg; /* address of first queue element */
-  conn_t *end; /* address of last queue element */
-  int len;     /* number of elements in the queue */
+typedef struct {
+    conn_t *beg; /* address of first queue element */
+    conn_t *end; /* address of last queue element */
+    int len;     /* number of elements in the queue */
 } queue_t;
 
 /* prototypes */

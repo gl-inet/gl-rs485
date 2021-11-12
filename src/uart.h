@@ -41,7 +41,7 @@
  *              milliseconds.
  *  \return  0 on success, -1 on failure.
  **************************************************************************************************/
-int32_t uartOpen(int8_t* port, uint32_t baudRate, uint32_t rtsCts, int32_t timeout);
+int32_t uartOpen(int8_t *port, uint32_t baudRate, uint32_t rtsCts, int32_t timeout);
 
 /***********************************************************************************************//**
  *  \brief  Close the serial port.
@@ -64,7 +64,7 @@ void flushIoBuffer(void);
  *  \param[out]  data Buffer used for storing the data.
  *  \return  The amount of bytes read or -1 on failure.
  **************************************************************************************************/
-int32_t uartRx(uint32_t dataLength, uint8_t* data);
+int32_t uartRx(uint32_t dataLength, uint8_t *data);
 
 /***********************************************************************************************//**
  *  \brief  Blocking read data from serial port. The function will block until the desired amount
@@ -76,7 +76,7 @@ int32_t uartRx(uint32_t dataLength, uint8_t* data);
  *  \param[out]  data Buffer used for storing the data.
  *  \return  The amount of bytes read or -1 on failure.
  **************************************************************************************************/
-int32_t uartRxExpires(uint32_t dataLength, uint8_t* data, int32_t timeout);
+int32_t uartRxExpires(uint32_t dataLength, uint8_t *data, int32_t timeout);
 
 /***********************************************************************************************//**
  *  \brief  Non-blocking read from serial port.
@@ -87,7 +87,7 @@ int32_t uartRxExpires(uint32_t dataLength, uint8_t* data, int32_t timeout);
  *  \return  The amount of bytes read, 0 if configured serial blocking time interval elapses or -1
  *           on failure.
  **************************************************************************************************/
-int32_t uartRxNonBlocking(uint32_t dataLength, uint8_t* data);
+int32_t uartRxNonBlocking(uint32_t dataLength, uint8_t *data);
 
 /***********************************************************************************************//**
  *  \brief  Return the number of bytes in the input buffer.
@@ -102,8 +102,8 @@ int32_t uartRxPeek(void);
  *  \param[in]  data Buffer used for storing the data.
  *  \return  The amount of bytes written or -1 on failure.
  **************************************************************************************************/
-int32_t uartTx(uint32_t dataLength, uint8_t* data);
-int32_t MyuartTx(int32_t serialHandle,uint32_t dataLength, uint8_t* data);
+int32_t uartTx(uint32_t dataLength, uint8_t *data);
+int32_t MyuartTx(int32_t serialHandle, uint32_t dataLength, uint8_t *data);
 /***********************************************************************************************//**
  *  \brief  Non-blocking write to serial port.
  *  \note  A truly non-blocking operation is possible only if uartOpen() is called with timeout
@@ -113,7 +113,7 @@ int32_t MyuartTx(int32_t serialHandle,uint32_t dataLength, uint8_t* data);
  *  \return  The amount of bytes read, 0 if configured serial blocking time interval elapses or -1
  *           on failure.
  **************************************************************************************************/
-int32_t uartTxNonBlocking(uint32_t dataLength, uint8_t* data);
+int32_t uartTxNonBlocking(uint32_t dataLength, uint8_t *data);
 
 /** @} (end addtogroup uart) */
 /** @} (end addtogroup platform_hw) */

@@ -3,8 +3,7 @@
 /*
  * Queue structure initialization
  */
-void
-queue_init(queue_t *queue)
+void queue_init(queue_t *queue)
 {
     queue->beg = NULL;
     queue->end = NULL;
@@ -14,8 +13,7 @@ queue_init(queue_t *queue)
 /*
  * Add new element to queue
  */
-conn_t *
-queue_new_elem(queue_t *queue)
+conn_t *queue_new_elem(queue_t *queue)
 {
     conn_t *newconn = (conn_t *)malloc(sizeof(conn_t));
     if (!newconn) {
@@ -38,8 +36,7 @@ queue_new_elem(queue_t *queue)
 /*
  * Remove element from queue
  */
-void
-queue_delete_elem(queue_t *queue, conn_t *conn)
+void queue_delete_elem(queue_t *queue, conn_t *conn)
 {
     if (queue->len <= 0) {
         /* queue is empty */
@@ -69,8 +66,7 @@ queue_delete_elem(queue_t *queue, conn_t *conn)
  * Parameters: CONN - pointer to current queue element
  * Return: pointer to next queue element
  */
-conn_t *
-queue_next_elem(queue_t *queue, conn_t *conn)
+conn_t *queue_next_elem(queue_t *queue, conn_t *conn)
 {
     return (conn->next == NULL) ? queue->beg : conn->next;
 }

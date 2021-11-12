@@ -40,17 +40,16 @@
 /*
  * Client connection related data storage structure
  */
-typedef struct conn_t
-{
-  struct conn_t *prev;  /* linked list previous connection */
-  struct conn_t *next;  /* linked list next connection */
-  int sd;               /* socket descriptor */
-  int state;            /* current state */
-  int timeout;          /* timeout value, secs */
-  char remote_addr[INET6_ADDRSTRLEN]; /* remote client address */
-  int ctr;              /* counter of data in the buffer */
-  int read_len;         /* length of modbus frame to read */
-  unsigned char buf[BUFSIZE];    /* data buffer */
+typedef struct conn_t {
+    struct conn_t *prev;  /* linked list previous connection */
+    struct conn_t *next;  /* linked list next connection */
+    int sd;               /* socket descriptor */
+    int state;            /* current state */
+    int timeout;          /* timeout value, secs */
+    char remote_addr[INET6_ADDRSTRLEN]; /* remote client address */
+    int ctr;              /* counter of data in the buffer */
+    int read_len;         /* length of modbus frame to read */
+    unsigned char buf[BUFSIZE];    /* data buffer */
 } conn_t;
 
 /* prototypes */
@@ -58,8 +57,8 @@ int conn_init(void);
 void conn_loop(void);
 void conn_open(void);
 conn_t *conn_close(conn_t *conn);
-ssize_t tty_write_read(char *buf, size_t nbytes,char type);
-ssize_t tty_write_file(char * file);
+ssize_t tty_write_read(char *buf, size_t nbytes, char type);
+ssize_t tty_write_file(char *file);
 
 #endif /* _CONN_H */
 

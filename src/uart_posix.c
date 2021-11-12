@@ -52,7 +52,7 @@ static struct termios origTTYAttrs;
 /***************************************************************************************************
  * Static Function Declarations
  **************************************************************************************************/
-static int32_t uartOpenSerial(int8_t* device, uint32_t bps, uint32_t dataBits, uint32_t parity,
+static int32_t uartOpenSerial(int8_t *device, uint32_t bps, uint32_t dataBits, uint32_t parity,
                               uint32_t stopBits, uint32_t rtsCts, uint32_t xOnXOff,
                               int32_t timeout);
 static int32_t uartCloseSerial(int32_t handle);
@@ -60,7 +60,7 @@ static int32_t uartCloseSerial(int32_t handle);
 /***************************************************************************************************
    Public Function Definitions
  **************************************************************************************************/
-int32_t uartOpen(int8_t* port, uint32_t baudRate, uint32_t rtsCts, int32_t timeout)
+int32_t uartOpen(int8_t *port, uint32_t baudRate, uint32_t rtsCts, int32_t timeout)
 {
 
     char mode_data_bit = 0;
@@ -68,11 +68,11 @@ int32_t uartOpen(int8_t* port, uint32_t baudRate, uint32_t rtsCts, int32_t timeo
     char mode_stop_bit = 0;
     mode_data_bit = cfg.ttymode[0] - '0';
     mode_stop_bit = cfg.ttymode[2] - '0';
-    if(cfg.ttymode[1] == 'e') {
+    if (cfg.ttymode[1] == 'e') {
         mode_parity = 2;
-    } else if(cfg.ttymode[1] == 'o') {
+    } else if (cfg.ttymode[1] == 'o') {
         mode_parity = 1;
-    } else if(cfg.ttymode[1] == 'n') {
+    } else if (cfg.ttymode[1] == 'n') {
         mode_parity = 0;
     }
     serialHandle = uartOpenSerial(port, baudRate, mode_data_bit, mode_parity, mode_stop_bit, rtsCts, 0, timeout);
@@ -104,17 +104,17 @@ void flushIoBuffer(void)
     if (serialHandle == -1) {
         return ;
     }
-    tcflush(serialHandle,TCIOFLUSH);
+    tcflush(serialHandle, TCIOFLUSH);
 }
 void MyflushIoBuffer(int32_t serialHandle)
 {
     if (serialHandle == -1) {
         return ;
     }
-    tcflush(serialHandle,TCIOFLUSH);
+    tcflush(serialHandle, TCIOFLUSH);
 }
 
-int32_t uartRx(uint32_t dataLength, uint8_t* data)
+int32_t uartRx(uint32_t dataLength, uint8_t *data)
 {
     /** The amount of bytes read. */
     size_t dataRead;
@@ -126,7 +126,7 @@ int32_t uartRx(uint32_t dataLength, uint8_t* data)
     }
     //pthread_mutex_lock(&lock);
     while (dataToRead) {
-        dataRead = read(serialHandle, (void*)data, dataToRead);
+        dataRead = read(serialHandle, (void *)data, dataToRead);
         if (-1 == dataRead) {
             return -1;
         } else {
@@ -138,7 +138,7 @@ int32_t uartRx(uint32_t dataLength, uint8_t* data)
     return (int32_t)dataLength;
 }
 
-int32_t MyuartRx(int32_t serialHandle, uint32_t dataLength, uint8_t* data)
+int32_t MyuartRx(int32_t serialHandle, uint32_t dataLength, uint8_t *data)
 {
     /** The amount of bytes read. */
     size_t dataRead;
@@ -150,7 +150,7 @@ int32_t MyuartRx(int32_t serialHandle, uint32_t dataLength, uint8_t* data)
     }
     //pthread_mutex_lock(&lock);
     while (dataToRead) {
-        dataRead = read(serialHandle, (void*)data, dataToRead);
+        dataRead = read(serialHandle, (void *)data, dataToRead);
         if (-1 == dataRead) {
             return -1;
         } else {
@@ -162,9 +162,9 @@ int32_t MyuartRx(int32_t serialHandle, uint32_t dataLength, uint8_t* data)
     return (int32_t)dataLength;
 }
 
-int32_t uartRxExpires(uint32_t dataLength, uint8_t* data, int32_t timeout)
+int32_t uartRxExpires(uint32_t dataLength, uint8_t *data, int32_t timeout)
 {
-    struct termios origAttrs,attrs;
+    struct termios origAttrs, attrs;
     size_t dataRead;
     int32_t serial = serialHandle;
 
@@ -191,7 +191,7 @@ int32_t uartRxExpires(uint32_t dataLength, uint8_t* data, int32_t timeout)
     if (tcsetattr(serial, TCSANOW, &attrs) == -1) {
         return -1;
     }
-    dataRead = read(serialHandle, (void*)data, (size_t)dataLength);
+    dataRead = read(serialHandle, (void *)data, (size_t)dataLength);
 
     /* Restore options to take effect immediately. */
     if (tcsetattr(serial, TCSANOW, &origAttrs) == -1) {
@@ -200,9 +200,9 @@ int32_t uartRxExpires(uint32_t dataLength, uint8_t* data, int32_t timeout)
     return dataRead;
 
 }
-int32_t MyuartRxExpires(int32_t serialHandle,uint32_t dataLength, uint8_t* data, int32_t timeout)
+int32_t MyuartRxExpires(int32_t serialHandle, uint32_t dataLength, uint8_t *data, int32_t timeout)
 {
-    struct termios origAttrs,attrs;
+    struct termios origAttrs, attrs;
     size_t dataRead;
     int32_t serial = serialHandle;
 
@@ -214,7 +214,7 @@ int32_t MyuartRxExpires(int32_t serialHandle,uint32_t dataLength, uint8_t* data,
     }
     attrs = origAttrs;
     /*Seting to raw mode*/
-//  cfmakeraw(&attrs);
+    //  cfmakeraw(&attrs);
     if (timeout < 0) {
         /* Block until character is received. No timeout configured. */
         attrs.c_cc[VMIN] = 1;
@@ -229,7 +229,7 @@ int32_t MyuartRxExpires(int32_t serialHandle,uint32_t dataLength, uint8_t* data,
     if (tcsetattr(serial, TCSANOW, &attrs) == -1) {
         return -1;
     }
-    dataRead = read(serialHandle, (void*)data, (size_t)dataLength);
+    dataRead = read(serialHandle, (void *)data, (size_t)dataLength);
 
     /* Restore options to take effect immediately. */
     if (tcsetattr(serial, TCSANOW, &origAttrs) == -1) {
@@ -239,7 +239,7 @@ int32_t MyuartRxExpires(int32_t serialHandle,uint32_t dataLength, uint8_t* data,
 
 }
 
-int32_t uartRxNonBlocking(uint32_t dataLength, uint8_t* data)
+int32_t uartRxNonBlocking(uint32_t dataLength, uint8_t *data)
 {
     /** The amount of bytes read. */
     size_t dataRead;
@@ -248,7 +248,7 @@ int32_t uartRxNonBlocking(uint32_t dataLength, uint8_t* data)
         return -1;
     }
     //pthread_mutex_lock(&lock);
-    dataRead = read(serialHandle, (void*)data, (size_t)dataLength);
+    dataRead = read(serialHandle, (void *)data, (size_t)dataLength);
     if (-1 == dataRead) {
         return -1;
     }
@@ -257,7 +257,7 @@ int32_t uartRxNonBlocking(uint32_t dataLength, uint8_t* data)
 }
 
 
-int32_t MyuartRxNonBlocking(int32_t serialHandle,uint32_t dataLength, uint8_t* data)
+int32_t MyuartRxNonBlocking(int32_t serialHandle, uint32_t dataLength, uint8_t *data)
 {
     /** The amount of bytes read. */
     size_t dataRead;
@@ -266,7 +266,7 @@ int32_t MyuartRxNonBlocking(int32_t serialHandle,uint32_t dataLength, uint8_t* d
         return -1;
     }
     //pthread_mutex_lock(&lock);
-    dataRead = read(serialHandle, (void*)data, (size_t)dataLength);
+    dataRead = read(serialHandle, (void *)data, (size_t)dataLength);
     if (-1 == dataRead) {
         return -1;
     }
@@ -282,13 +282,13 @@ int32_t uartRxPeek(void)
     if (serialHandle == -1) {
         return -1;
     }
-    if (-1 == ioctl(serialHandle, FIONREAD, (int*)&bytesInBuf)) {
+    if (-1 == ioctl(serialHandle, FIONREAD, (int *)&bytesInBuf)) {
         return -1;
     }
     return bytesInBuf;
 }
 
-int32_t uartTx(uint32_t dataLength, uint8_t* data)
+int32_t uartTx(uint32_t dataLength, uint8_t *data)
 {
     /** The amount of bytes written. */
     size_t dataWritten;
@@ -300,7 +300,7 @@ int32_t uartTx(uint32_t dataLength, uint8_t* data)
     }
     //pthread_mutex_lock(&lock);
     while (dataToWrite) {
-        dataWritten = write(serialHandle, (void*)data, dataToWrite);
+        dataWritten = write(serialHandle, (void *)data, dataToWrite);
         if (-1 == dataWritten) {
             if (EAGAIN == errno) {
                 continue;
@@ -315,7 +315,7 @@ int32_t uartTx(uint32_t dataLength, uint8_t* data)
     //pthread_mutex_unlock(&lock);
     return (int32_t)dataToWrite;
 }
-int32_t MyuartTx(int32_t serialHandle,uint32_t dataLength, uint8_t* data)
+int32_t MyuartTx(int32_t serialHandle, uint32_t dataLength, uint8_t *data)
 {
     /** The amount of bytes written. */
     size_t dataWritten;
@@ -327,7 +327,7 @@ int32_t MyuartTx(int32_t serialHandle,uint32_t dataLength, uint8_t* data)
     }
     //pthread_mutex_lock(&lock);
     while (dataToWrite) {
-        dataWritten = write(serialHandle, (void*)data, dataToWrite);
+        dataWritten = write(serialHandle, (void *)data, dataToWrite);
         if (-1 == dataWritten) {
             if (EAGAIN == errno) {
                 continue;
@@ -343,7 +343,7 @@ int32_t MyuartTx(int32_t serialHandle,uint32_t dataLength, uint8_t* data)
     return (int32_t)dataToWrite;
 }
 
-int32_t uartTxNonBlocking(uint32_t dataLength, uint8_t* data)
+int32_t uartTxNonBlocking(uint32_t dataLength, uint8_t *data)
 {
     /** The amount of bytes written. */
     size_t dataWritten;
@@ -354,8 +354,8 @@ int32_t uartTxNonBlocking(uint32_t dataLength, uint8_t* data)
 
 
     while (dataToWrite) {
-        dataWritten = write(serialHandle, (void*)data, dataToWrite);
-        if ((dataWritten==0)||(dataWritten==-1)) {
+        dataWritten = write(serialHandle, (void *)data, dataToWrite);
+        if ((dataWritten == 0) || (dataWritten == -1)) {
             break;
         } else {
             dataToWrite -= dataWritten;
@@ -368,7 +368,7 @@ int32_t uartTxNonBlocking(uint32_t dataLength, uint8_t* data)
 
 }
 
-int32_t MyuartTxNonBlocking(int32_t serialHandle, uint32_t dataLength, uint8_t* data)
+int32_t MyuartTxNonBlocking(int32_t serialHandle, uint32_t dataLength, uint8_t *data)
 {
     /** The amount of bytes written. */
     size_t dataWritten;
@@ -379,8 +379,8 @@ int32_t MyuartTxNonBlocking(int32_t serialHandle, uint32_t dataLength, uint8_t* 
 
 
     while (dataToWrite) {
-        dataWritten = write(serialHandle, (void*)data, dataToWrite);
-        if ((dataWritten==0)||(dataWritten==-1)) {
+        dataWritten = write(serialHandle, (void *)data, dataToWrite);
+        if ((dataWritten == 0) || (dataWritten == -1)) {
             break;
         } else {
             dataToWrite -= dataWritten;
@@ -410,7 +410,7 @@ int32_t MyuartTxNonBlocking(int32_t serialHandle, uint32_t dataLength, uint8_t* 
  *             timeout < 0, block until character is received, there is no timeout.
  *  \return  0 on success, -1 on failure.
  **************************************************************************************************/
-static int32_t uartOpenSerial(int8_t* device, uint32_t bps, uint32_t dataBits, uint32_t parity,
+static int32_t uartOpenSerial(int8_t *device, uint32_t bps, uint32_t dataBits, uint32_t parity,
                               uint32_t stopBits, uint32_t rtsCts, uint32_t xOnXOff, int32_t timeout)
 {
     uint32_t i;
@@ -425,17 +425,17 @@ static int32_t uartOpenSerial(int8_t* device, uint32_t bps, uint32_t dataBits, u
     }
     if (speedTab[i].nspeed == 0) {
         fprintf(stderr, "Baud rate not supported %s - %s(%d).\n",
-                (char*)device,
+                (char *)device,
                 strerror(errno), errno);
         goto error;
     }
 
     /* Open the serial port read/write, with no controlling terminal, and don't wait for a
      * connection. The O_NONBLOCK flag also causes subsequent I/O on the device to be non-blocking. */
-    serial = open((char*)device, O_RDWR | O_NOCTTY | O_NONBLOCK);
+    serial = open((char *)device, O_RDWR | O_NOCTTY | O_NONBLOCK);
     if (serial == -1) {
         fprintf(stderr, "Error opening serial port %s - %s(%d).\n",
-                (char*)device,
+                (char *)device,
                 strerror(errno), errno);
         goto error;
     }
@@ -445,7 +445,7 @@ static int32_t uartOpenSerial(int8_t* device, uint32_t bps, uint32_t dataBits, u
      * processes. */
     if (ioctl(serial, TIOCEXCL) == -1) {
         fprintf(stderr, "Error setting TIOCEXCL on %s - %s(%d).\n",
-                (char*)device,
+                (char *)device,
                 strerror(errno), errno);
         goto error;
     }
@@ -453,7 +453,7 @@ static int32_t uartOpenSerial(int8_t* device, uint32_t bps, uint32_t dataBits, u
     /* Get the current options and save them so we can restore the default settings later. */
     if (tcgetattr(serial, &origTTYAttrs) == -1) {
         fprintf(stderr, "Error getting tty attributes %s - %s(%d).\n",
-                (char*)device,
+                (char *)device,
                 strerror(errno), errno);
         goto error;
     }
@@ -465,7 +465,7 @@ static int32_t uartOpenSerial(int8_t* device, uint32_t bps, uint32_t dataBits, u
     /* Now that the device is open, clear the O_NONBLOCK flag so subsequent I/O will block. */
     if (fcntl(serial, F_SETFL, 0) == -1) {
         fprintf(stderr, "Error clearing O_NONBLOCK %s - %s(%d).\n",
-                (char*)device,
+                (char *)device,
                 strerror(errno), errno);
         goto error;
     }
@@ -473,7 +473,7 @@ static int32_t uartOpenSerial(int8_t* device, uint32_t bps, uint32_t dataBits, u
     /* Configure baud rate. */
     if (cfsetspeed(&ttyAttrs, speedTab[i].cbaud) == -1) {
         fprintf(stderr, "Error setting baud rate %s - %s(%d).\n",
-                (char*)device,
+                (char *)device,
                 strerror(errno), errno);
         goto error;
     }
@@ -481,10 +481,10 @@ static int32_t uartOpenSerial(int8_t* device, uint32_t bps, uint32_t dataBits, u
     /* Set raw input (non-canonical) mode. */
     cfmakeraw(&ttyAttrs);
 
-//  ttyAttrs.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL | IXON);
-//  ttyAttrs.c_oflag &= ~OPOST;
-//  ttyAttrs.c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
-//  ttyAttrs.c_cflag &= ~(CSIZE | CSTOPB | PARENB | PARODD | CRTSCTS);
+    //  ttyAttrs.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL | IXON);
+    //  ttyAttrs.c_oflag &= ~OPOST;
+    //  ttyAttrs.c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
+    //  ttyAttrs.c_cflag &= ~(CSIZE | CSTOPB | PARENB | PARODD | CRTSCTS);
 
     /* Input modes. */
     /* If this bit is set, break conditions are ignored. */
@@ -574,7 +574,7 @@ static int32_t uartOpenSerial(int8_t* device, uint32_t bps, uint32_t dataBits, u
     /* Cause the new options to take effect immediately. */
     if (tcsetattr(serial, TCSANOW, &ttyAttrs) == -1) {
         fprintf(stderr, "Error setting tty attributes %s - %s(%d).\n",
-                (char*)device,
+                (char *)device,
                 strerror(errno), errno);
         goto error;
     }
