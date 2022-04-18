@@ -17,6 +17,14 @@
 #include <gl/shell.h>
 #include "cfg.h"
 
+
+#define APPNMAE "RS485"
+
+char *get_package_name(void)
+{
+    return APPNMAE;
+}
+
 /***
  * @api {get} /rs485/attr/get /rs485/attr/get
  * @apiGroup rs485
