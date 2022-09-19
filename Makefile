@@ -17,7 +17,7 @@ define Package/gl-rs485/Default
 	SECTION:=base
 	CATEGORY:=gl-inet
 	TITLE:=GL iNet rs485 1.0
-	DEPENDS:=+libblobmsg-json  +gl-util +libuci +libjson-c  +mqtt
+	DEPENDS:=+libblobmsg-json +libuci +libjson-c  +mqtt
 endef
 
 Package/gl-rs485 = $(Package/gl-rs485/Default)
