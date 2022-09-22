@@ -1,4 +1,4 @@
-LDFLAGS += -L.  -Xlinker "-("  -Bstatic -lglutil -Xlinker "-)" -ljson-c -luci -lpaho-mqtt3cs
+LDFLAGS += -L.  -I include -Xlinker "-("  -Bstatic -lglutil -Xlinker "-)" -ljson-c -luci -lpaho-mqtt3cs
 
 all :  gl-rs485 librs485api
 
