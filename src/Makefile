@@ -1,4 +1,13 @@
-LDFLAGS += -L.  -I include -Xlinker "-("  -Bstatic -lglutil -Xlinker "-)" -ljson-c -luci -lpaho-mqtt3cs
+include $(TOPDIR)/rules.mk
+
+ifdef CONFIG_TARGET_ath79
+       GLUTIL = -lglutil_ath79
+else ifdef CONFIG_TARGET_x86_64
+       GLUTIL = -lglutil_x86_64
+endif
+
+
+LDFLAGS += -L. -I include -Xlinker "-("  -Bstatic $(GLUTIL) -Xlinker "-)" -ljson-c -luci -lpaho-mqtt3cs
 
 all :  gl-rs485 librs485api
 
